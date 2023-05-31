@@ -7,10 +7,6 @@ const path = require('path');
 const json = require('../messages.json');
 const { RULE_PATCH, TYPE_PATCH, DEFINITION_PATCH, SKIP, UINT_TYPE } = require('./protobuf-patches');
 
-const args = process.argv.slice(2);
-
-const isTypescript = args.includes('typescript');
-
 // proto types to javascript types
 const FIELD_TYPES = {
     uint32: 'number',
@@ -203,7 +199,7 @@ export type TypedCall = <T extends MessageKey, R extends MessageKey>(
 `);
 
 // save to file
-const filePath = path.join(__dirname, '../src/types/messages.ts');
+const filePath = path.join(__dirname, '../src/messages.ts');
 
 fs.writeFile(filePath, lines.join('\n'), err => {
     if (err) return console.log(err);
