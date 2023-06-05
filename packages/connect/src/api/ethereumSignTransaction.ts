@@ -7,14 +7,22 @@ import { getEthereumNetwork } from '../data/coinInfo';
 import { getNetworkLabel } from '../utils/ethereumUtils';
 import { stripHexPrefix } from '../utils/formatUtils';
 import * as helper from './ethereum/ethereumSignTx';
-import { getEthereumDefinitions } from './ethereum/ethereumDefinitions';
+import {
+    getEthereumDefinitions,
+    decodeEthereumDefinition,
+    ethereumNetworkInfoFromDefinition,
+} from './ethereum/ethereumDefinitions';
 import type { EthereumTransaction, EthereumTransactionEIP1559 } from '../types/api/ethereum';
+import type { EthereumNetworkInfo } from '../types';
+import type { EthereumDefinitions } from '@trezor/protobuf/lib/messages';
 
 type Params = {
     path: number[];
     tx:
         | ({ type: 'legacy' } & EthereumTransaction)
         | ({ type: 'eip1559' } & EthereumTransactionEIP1559);
+    network?: EthereumNetworkInfo;
+    definitions?: EthereumDefinitions;
 };
 
 // const strip: <T>(value: T) => T = value => {
@@ -44,7 +52,7 @@ export default class EthereumSignTransaction extends AbstractMethod<
         this.requiredPermissions = ['read', 'write'];
 
         const { payload } = this;
-
+        console.log('payload', payload);
         // validate incoming parameters
         validateParams(payload, [
             { name: 'path', required: true },
@@ -104,22 +112,36 @@ export default class EthereumSignTransaction extends AbstractMethod<
                 type: isEIP1559 ? 'eip1559' : 'legacy',
                 ...strip(tx), // strip '0x' from values
             },
+            network,
         };
     }
 
-    get info() {
-        return getNetworkLabel('Sign #NETWORK transaction', getEthereumNetwork(this.params.path));
-    }
-
-    async run() {
-        const { tx } = this.params;
-
+    async initAsync(): Promise<void> {
+        if (this.params.network && !this.params.tx.data) {
+            // network was already set from 'well-known' definition in init method && tokens are not included
+            // this means that we also don't need to send definition to device because it is baked-in
+            return;
+        }
         const slip44 = getSlip44ByPath(this.params.path);
         const definitions = await getEthereumDefinitions({
-            chainId: tx.chainId,
+            chainId: this.params.tx.chainId,
             slip44,
-            contractAddress: tx.data ? tx.to : undefined,
+            contractAddress: this.params.tx.data ? this.params.tx.to : undefined,
         });
+        this.params.definitions = definitions;
+
+        const decoded = decodeEthereumDefinition(definitions);
+        if (decoded.network) {
+            this.params.network = ethereumNetworkInfoFromDefinition(decoded.network);
+        }
+    }
+
+    get info() {
+        return getNetworkLabel('Sign #NETWORK transaction', this.params.network);
+    }
+
+    run() {
+        const { tx, definitions } = this.params;
 
         return tx.type === 'eip1559'
             ? helper.ethereumSignTxEIP1559(
