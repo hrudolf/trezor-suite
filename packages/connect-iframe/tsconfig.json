@@ -1,6 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
+        "isolatedModules": false,
         "outDir": "./libDev",
         "types": ["web", "w3c-web-usb", "jest"]
     },
