@@ -7,29 +7,28 @@ import {
     OnboardingStepBox,
     SkipStepConfirmation,
 } from 'src/components/onboarding';
-import * as deviceSettingsActions from 'src/actions/settings/deviceSettingsActions';
-import { useActions, useSelector, useOnboarding } from 'src/hooks/suite';
+import { changePin } from 'src/actions/settings/deviceSettingsActions';
+import { useDispatch, useSelector, useOnboarding } from 'src/hooks/suite';
 import { getDeviceModel } from '@trezor/device-utils';
 import { selectIsActionAbortable } from 'src/reducers/suite/suiteReducer';
 
 const SetPinStep = () => {
     const [showSkipConfirmation, setShowSkipConfirmation] = useState(false);
-    const device = useSelector(state => state.suite.device);
-    const modal = useSelector(state => state.modal);
     const [status, setStatus] = useState<'initial' | 'enter-pin' | 'repeat-pin' | 'success'>(
         'initial',
     );
-    const { goToNextStep, showPinMatrix, updateAnalytics } = useOnboarding();
-    const deviceModel = getDeviceModel(device);
+    const device = useSelector(state => state.suite.device);
+    const modal = useSelector(state => state.modal);
     const isActionAbortable = useSelector(selectIsActionAbortable);
+    const dispatch = useDispatch();
 
-    const { changePin } = useActions({
-        changePin: deviceSettingsActions.changePin,
-    });
+    const { goToNextStep, showPinMatrix, updateAnalytics } = useOnboarding();
+
+    const deviceModel = getDeviceModel(device);
 
     const onTryAgain = () => {
         setStatus('initial');
-        changePin({});
+        dispatch(changePin({}));
     };
 
     useEffect(() => {

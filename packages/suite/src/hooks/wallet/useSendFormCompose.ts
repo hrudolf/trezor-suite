@@ -11,9 +11,9 @@ import {
     PrecomposedLevelsCardano,
 } from '@suite-common/wallet-types';
 import { useAsyncDebounce } from '@trezor/react-utils';
-import { useActions, useTranslation } from 'src/hooks/suite';
+import { useDispatch, useTranslation } from 'src/hooks/suite';
 import { isChanged } from 'src/utils/suite/comparisonUtils';
-import * as sendFormActions from 'src/actions/wallet/sendFormActions';
+import { composeTransaction } from 'src/actions/wallet/sendFormActions';
 import { findComposeErrors } from '@suite-common/wallet-utils';
 import { FeeLevel } from '@trezor/connect';
 import { TranslationKey } from 'src/components/suite/Translation';
@@ -47,9 +47,8 @@ export const useSendFormCompose = ({
     const [composeField, setComposeField] = useState<FieldPath<FormState> | undefined>(undefined);
     const [draftSaveRequest, setDraftSaveRequest] = useState(false);
 
-    const { composeTransaction } = useActions({
-        composeTransaction: sendFormActions.composeTransaction,
-    });
+    const dispatch = useDispatch();
+
     const { translationString } = useTranslation();
 
     const composeRequestRef = useRef<string | undefined>(undefined); // input name, caller of compose request
@@ -63,26 +62,20 @@ export const useSendFormCompose = ({
             updateContext({ isLoading: true, isDirty: true });
             setComposedLevels(undefined);
 
-            const result = await composeTransaction(values, {
-                account,
-                network: state.network,
-                feeInfo: state.feeInfo,
-                excludedUtxos,
-                prison,
-            });
+            const result = await dispatch(
+                composeTransaction(values, {
+                    account,
+                    network: state.network,
+                    feeInfo: state.feeInfo,
+                    excludedUtxos,
+                    prison,
+                }),
+            );
 
             setComposedLevels(result);
             updateContext({ isLoading: false, isDirty: true }); // isDirty needs to be set again, "state" is cached in updateContext callback
         },
-        [
-            account,
-            prison,
-            excludedUtxos,
-            state.network,
-            state.feeInfo,
-            composeTransaction,
-            updateContext,
-        ],
+        [account, dispatch, prison, excludedUtxos, state.network, state.feeInfo, updateContext],
     );
 
     // called from composeRequest useEffect
@@ -97,13 +90,15 @@ export const useSendFormCompose = ({
             // save draft (it could be changed later, after composing)
             setDraftSaveRequest(true);
 
-            return composeTransaction(values, {
-                account,
-                network: state.network,
-                feeInfo: state.feeInfo,
-                excludedUtxos,
-                prison,
-            });
+            return dispatch(
+                composeTransaction(values, {
+                    account,
+                    network: state.network,
+                    feeInfo: state.feeInfo,
+                    excludedUtxos,
+                    prison,
+                }),
+            );
         };
 
         // store current request ID before async debounced process and compare it later. see explanation below
@@ -123,6 +118,7 @@ export const useSendFormCompose = ({
         }
     }, [
         account,
+        dispatch,
         excludedUtxos,
         prison,
         state.network,
@@ -131,7 +127,6 @@ export const useSendFormCompose = ({
         debounce,
         errors,
         getValues,
-        composeTransaction,
     ]);
 
     // Create a compose request which should be processed in useEffect below

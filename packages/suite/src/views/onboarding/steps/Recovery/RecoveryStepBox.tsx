@@ -5,19 +5,15 @@ import {
     OnboardingStepBoxProps,
 } from 'src/components/onboarding';
 import { Translation } from 'src/components/suite';
-import * as onboardingActions from 'src/actions/onboarding/onboardingActions';
-import * as recoveryActions from 'src/actions/recovery/recoveryActions';
-import { useActions, useSelector } from 'src/hooks/suite';
+import { goToPreviousStep } from 'src/actions/onboarding/onboardingActions';
+import { setStatus } from 'src/actions/recovery/recoveryActions';
+import { useDispatch, useSelector } from 'src/hooks/suite';
 import { DeviceModel } from '@trezor/device-utils';
 import { useDeviceModel } from 'src/hooks/suite/useDeviceModel';
 
 const RecoveryStepBox = (props: OnboardingStepBoxProps) => {
-    const { goToPreviousStep, setStatus } = useActions({
-        goToPreviousStep: onboardingActions.goToPreviousStep,
-        setStatus: recoveryActions.setStatus,
-    });
-
     const recovery = useSelector(state => state.recovery);
+    const dispatch = useDispatch();
 
     const deviceModel = useDeviceModel();
 
@@ -27,13 +23,13 @@ const RecoveryStepBox = (props: OnboardingStepBoxProps) => {
 
     const handleBack = () => {
         if (recovery.status === 'select-recovery-type') {
-            return setStatus('initial');
+            return dispatch(setStatus('initial'));
         }
         // allow to change recovery settings for T1 in case of error
         if (recovery.status === 'finished' && recovery.error && deviceModel === DeviceModel.T1) {
-            return setStatus('initial');
+            return dispatch(setStatus('initial'));
         }
-        return goToPreviousStep();
+        return dispatch(goToPreviousStep());
     };
 
     const isBackButtonVisible = () => {

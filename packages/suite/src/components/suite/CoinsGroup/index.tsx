@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Translation } from 'src/components/suite';
-import { useActions } from 'src/hooks/suite';
-import { openModal as openModalAction } from 'src/actions/suite/modalActions';
+import { useDispatch } from 'src/hooks/suite';
+import { openModal } from 'src/actions/suite/modalActions';
 import CoinsGroupHeader from './CoinsGroupHeader';
 import CoinsList from './CoinsList';
 import type { Network } from 'src/types/wallet';
@@ -26,18 +26,18 @@ const CoinsGroup = ({
     testnet,
     className,
 }: CoinsGroupProps) => {
-    const { openModal } = useActions({
-        openModal: openModalAction,
-    });
+    const dispatch = useDispatch();
 
     const [settingsMode, setSettingsMode] = useState(false);
 
     const onSettings = (symbol: Network['symbol']) => {
         setSettingsMode(false);
-        openModal({
-            type: 'advanced-coin-settings',
-            coin: symbol,
-        });
+        dispatch(
+            openModal({
+                type: 'advanced-coin-settings',
+                coin: symbol,
+            }),
+        );
     };
 
     return (
