@@ -4,7 +4,6 @@ import TrezorConnect from '@trezor/connect';
 import {
     ConfirmOnDevice,
     Backdrop,
-    variables,
     CollapsibleCard,
     CollapsibleCardProps,
 } from '@trezor/components';
@@ -16,7 +15,7 @@ import messages from 'src/support/messages';
 const ConfirmWrapper = styled.div`
     margin-bottom: 20px;
     height: 62px;
-    z-index: ${variables.Z_INDEX.BASE};
+    z-index: 2;
 `;
 
 const InnerActions = styled.div`
@@ -31,22 +30,27 @@ const OuterActions = styled.div<{ smallMargin?: boolean }>`
     margin-top: ${({ smallMargin }) => (smallMargin ? '0px' : '20px')};
     width: 100%;
     justify-content: center;
-    z-index: ${variables.Z_INDEX.BASE};
+    z-index: 2;
 `;
 
-const StyledBackdrop = styled(Backdrop)<{ show: boolean }>`
+export const StyledBackdrop = styled(Backdrop)<{ show: boolean }>`
     transition: all 0.3s;
     opacity: ${({ show }) => (show ? '1' : '0')};
     pointer-events: ${({ show }) => (show ? 'initial' : 'none')};
-    z-index: auto;
+    z-index: 1;
+`;
+
+const StyledCollapsibleCard = styled(CollapsibleCard)<{ $isBackDropVisible: boolean }>`
+    z-index: ${({ $isBackDropVisible }) => ($isBackDropVisible ? 3 : 0)};
 `;
 
 export interface OnboardingStepBoxProps extends CollapsibleCardProps {
     innerActions?: React.ReactNode;
     outerActions?: React.ReactNode;
-    deviceModel?: DeviceModel;
+    deviceModel?: DeviceModel; //  the device prompt is displayed when this is set
     disableConfirmWrapper?: boolean;
     nested?: boolean;
+    devicePromptTitle?: React.ReactNode;
     isActionAbortable?: boolean;
 }
 
@@ -60,19 +64,22 @@ export const OnboardingStepBox = ({
     isActionAbortable,
     disableConfirmWrapper,
     nested,
+    devicePromptTitle,
     children,
     ...rest
 }: OnboardingStepBoxProps) => {
     const intl = useIntl();
 
+    const isBackDropVisible = !!deviceModel && !disableConfirmWrapper;
+
     return (
         <>
-            <StyledBackdrop show={!!deviceModel && !disableConfirmWrapper} />
+            <StyledBackdrop show={isBackDropVisible} />
             {!disableConfirmWrapper && (
                 <ConfirmWrapper data-test="@onboarding/confirm-on-device">
                     {deviceModel && (
                         <ConfirmOnDevice
-                            title={<Translation id="TR_CONFIRM_ON_TREZOR" />}
+                            title={devicePromptTitle || <Translation id="TR_CONFIRM_ON_TREZOR" />}
                             deviceModel={deviceModel}
                             onCancel={
                                 isActionAbortable
@@ -87,11 +94,12 @@ export const OnboardingStepBox = ({
                 </ConfirmWrapper>
             )}
 
-            <CollapsibleCard
+            <StyledCollapsibleCard
                 image={image}
                 heading={heading}
                 description={description}
                 nested={nested}
+                $isBackDropVisible={isBackDropVisible}
                 {...rest}
             >
                 {(children || innerActions) && (
@@ -100,7 +108,7 @@ export const OnboardingStepBox = ({
                         {innerActions && <InnerActions>{innerActions}</InnerActions>}
                     </>
                 )}
-            </CollapsibleCard>
+            </StyledCollapsibleCard>
 
             {outerActions && <OuterActions smallMargin={nested}>{outerActions}</OuterActions>}
         </>
