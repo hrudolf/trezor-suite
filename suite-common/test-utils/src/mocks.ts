@@ -363,6 +363,11 @@ const getTrezorConnect = <M>(methods?: M) => {
                 ...getFixture(),
                 _params,
             })),
+            showDeviceTutorial: jest.fn(async _params => ({
+                success: true,
+                ...getFixture(),
+                _params,
+            })),
             ethereumSignTransaction: jest.fn(async _params => ({
                 success: false,
                 payload: { error: 'error' },
