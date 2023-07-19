@@ -24,6 +24,7 @@
         { "path": "../formatters" },
         { "path": "../react-native-graph" },
         { "path": "../state" },
+        { "path": "../storage" },
         { "path": "../theme" },
         { "path": "../../packages/styles" },
         { "path": "../../packages/suite-data" },

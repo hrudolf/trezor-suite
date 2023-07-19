@@ -7029,6 +7029,7 @@ __metadata:
     "@suite-native/formatters": "workspace:*"
     "@suite-native/react-native-graph": "workspace:*"
     "@suite-native/state": "workspace:*"
+    "@suite-native/storage": "workspace:*"
     "@suite-native/theme": "workspace:*"
     "@trezor/styles": "workspace:*"
     "@trezor/suite-data": "workspace:*"
