@@ -72,10 +72,19 @@ test.beforeAll(async () => {
             }
             console.log(requestIndex, response.status(), response.url());
             requestIndex++;
+
+            let text;
+            // seeing some error similar to https://github.com/microsoft/playwright/issues/7831
+            // so doing try catch. if it fails, it does not matter for this test
+            try {
+                text = await response.text();
+            } catch (error) {
+                text = 'error';
+            }
             responses.push({
                 url: response.url(),
                 status: response.status(),
-                body: await response.text(),
+                body: text,
             });
         });
 
@@ -207,7 +216,7 @@ test.beforeAll(async () => {
     // reloading page might end with "closed device" error from here:
     // https://github.com/trezor/trezord-go/blob/106e5e9af3573ac2b27ebf2082bbee91650949bf/usb/libusb.go#L511
     // this was probably targeted by this (never merged) trezor-bridge PR https://github.com/trezor/trezord-go/pull/156
-    test.skip(`client (connect-explorer) is reloaded by user while popup is active. bridge version ${bridgeVersion}`, async ({
+    test(`client (connect-explorer) is reloaded by user while popup is active. bridge version ${bridgeVersion}`, async ({
         page,
     }) => {
         await page.reload();
