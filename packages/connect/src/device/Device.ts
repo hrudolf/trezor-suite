@@ -14,6 +14,7 @@ import {
 import { versionCompare } from '../utils/versionUtils';
 import { create as createDeferred, Deferred } from '../utils/deferred';
 import { initLog } from '../utils/debug';
+import { DeviceModel } from '../types';
 import type { Transport, Descriptor } from '@trezor/transport';
 import type {
     Device as DeviceTyped,
@@ -655,6 +656,16 @@ export class Device extends TypedEmitter<DeviceEvents> {
         return 'normal';
     }
 
+    getModel() {
+        const deviceModel = this.features?.model;
+
+        if (Object.values(DeviceModel).includes(deviceModel as DeviceModel)) {
+            return deviceModel as DeviceModel;
+        }
+
+        return DeviceModel.UNKNOWN;
+    }
+
     // simplified object to pass via postMessage
     toMessageObject(): DeviceTyped {
         if (this.unreadableError) {
@@ -690,6 +701,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             firmwareType: this.firmwareType,
             features: this.features,
             unavailableCapabilities: this.unavailableCapabilities,
+            model: this.getModel(),
         };
     }
 

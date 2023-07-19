@@ -20,6 +20,13 @@ export type FirmwareType = 'bitcoin-only' | 'regular';
 // key = coin shortcut lowercase (ex: btc, eth, xrp) OR field declared in coins.json "supportedFirmware.capability"
 export type UnavailableCapabilities = { [key: string]: UnavailableCapability };
 
+export enum DeviceModel {
+    T1 = '1',
+    TT = 'T',
+    T2B1 = 'R',
+    UNKNOWN = 'UNKNOWN',
+}
+
 export type KnownDevice = {
     type: 'acquired';
     id: string | null;
@@ -34,6 +41,7 @@ export type KnownDevice = {
     state?: string;
     features: PROTO.Features;
     unavailableCapabilities: UnavailableCapabilities;
+    model: DeviceModel;
 };
 
 export type UnknownDevice = {
@@ -50,6 +58,7 @@ export type UnknownDevice = {
     mode?: typeof undefined;
     state?: typeof undefined;
     unavailableCapabilities?: typeof undefined;
+    model?: typeof undefined;
 };
 
 export type UnreadableDevice = {
@@ -66,6 +75,7 @@ export type UnreadableDevice = {
     mode?: typeof undefined;
     state?: typeof undefined;
     unavailableCapabilities?: typeof undefined;
+    model?: typeof undefined;
 };
 
 export type Device = KnownDevice | UnknownDevice | UnreadableDevice;
