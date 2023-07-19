@@ -43,7 +43,7 @@ export const prepareRootReducers = async () => {
         reducer: walletReducers,
         persistedKeys: ['accounts', 'transactions'],
         key: 'wallet',
-        version: 1,
+        version: 2,
     });
 
     const analyticsPersistedReducer = await preparePersistReducer({
