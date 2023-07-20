@@ -216,7 +216,7 @@ export class DeviceList extends TypedEmitter<DeviceListEvents> {
                         await resolveAfter(1000, null).promise;
                         // and if the device is still reelased and has never been acquired before, acquire it here.
                         if (!device.isUsed() && device.isUnacquired() && !device.isInconsistent()) {
-                            _log.debug('Create device from unacquired', device);
+                            _log.debug('Create device from unacquired', device.toMessageObject());
                             await this._createAndSaveDevice(descriptor);
                         }
                     }
@@ -241,7 +241,7 @@ export class DeviceList extends TypedEmitter<DeviceListEvents> {
                     d.forEach(descriptor => {
                         const path = descriptor.path.toString();
                         const device = this.devices[path];
-                        _log.debug('Event', e, device);
+                        _log.debug('Event', e, device.toMessageObject());
                         if (device) {
                             this.emit(e, device.toMessageObject());
                         }
