@@ -127,13 +127,7 @@ test('Basic web extension MV3', async () => {
         type: 'bridge-start',
     });
 
-    const pathToExtension = path.join(
-        __dirname,
-        '..',
-        '..',
-        'connect-examples',
-        'webextension-mv3',
-    );
+    const pathToExtension = path.join(__dirname, '..', 'build');
 
     const userDataDir = '/tmp/test-user-data-dir';
     const browserContext = await chromium.launchPersistentContext(userDataDir, {
