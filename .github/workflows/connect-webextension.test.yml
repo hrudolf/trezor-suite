@@ -21,7 +21,9 @@ jobs:
           submodules: recursive
       - run: yarn install
       - run: yarn build:libs
-      - name: Build extension
+      - name: Build extension mv2
         run: "node ./packages/connect-examples/update-webextensions.js"
+      - name: Build extension mv3
+        run: "yarn workspace @trezor/connect-webextension build"
       - name: Run connect web extension test
         run: "./docker/docker-connect-webextension-ci.sh"
