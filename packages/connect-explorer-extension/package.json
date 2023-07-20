@@ -11,9 +11,12 @@
         "build": "rimraf build && yarn prepare && TS_NODE_PROJECT=\"tsconfig.json\" yarn webpack --config ./webpack/prod.webpack.config.ts"
     },
     "dependencies": {
+        "@trezor/connect-explorer": "workspace:^",
         "@trezor/connect-web": "workspace:^",
         "react": "^18.2.0",
-        "react-dom": "^18.2.0"
+        "react-dom": "^18.2.0",
+        "react-redux": "^8.1.1",
+        "react-router-dom": "^6.14.2"
     },
     "devDependencies": {
         "@types/react": "^18.2.15",
