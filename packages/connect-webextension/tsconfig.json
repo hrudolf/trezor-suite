@@ -1,12 +1,14 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "isolatedModules": false,
-        "noEmit": true
+        "outDir": "./libDev",
+        "types": ["web", "node"]
     },
-    "include": ["**/*.ts", "**/*.js"],
-    "references": [
-        { "path": "../node-utils" },
-        { "path": "../trezor-user-env-link" }
-    ]
+    "include": [".", "**/*.json"],
+    "references": [],
+    "ts-node": {
+        "compilerOptions": {
+            "module": "CommonJS"
+        }
+    }
 }
