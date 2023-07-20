@@ -7871,6 +7871,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@trezor/connect-explorer-extension@workspace:packages/connect-explorer-extension":
+  version: 0.0.0-use.local
+  resolution: "@trezor/connect-explorer-extension@workspace:packages/connect-explorer-extension"
+  dependencies:
+    "@trezor/connect-web": "workspace:^"
+    "@types/react": ^18.2.15
+    copy-webpack-plugin: ^11.0.0
+    html-webpack-plugin: ^5.5.3
+    react: ^18.2.0
+    react-dom: ^18.2.0
+    rimraf: ^5.0.1
+    typescript: 4.9.5
+    webpack: ^5.87.0
+    webpack-cli: ^5.1.4
+    webpack-dev-server: ^4.15.1
+    webpack-merge: ^5.9.0
+    webpack-plugin-serve: ^1.6.0
+  peerDependencies:
+    react: 18.2.0
+  languageName: unknown
+  linkType: soft
+
 "@trezor/connect-explorer@workspace:packages/connect-explorer":
   version: 0.0.0-use.local
   resolution: "@trezor/connect-explorer@workspace:packages/connect-explorer"
@@ -8016,7 +8038,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@trezor/connect-web@workspace:*, @trezor/connect-web@workspace:packages/connect-web":
+"@trezor/connect-web@workspace:*, @trezor/connect-web@workspace:^, @trezor/connect-web@workspace:packages/connect-web":
   version: 0.0.0-use.local
   resolution: "@trezor/connect-web@workspace:packages/connect-web"
   dependencies:
@@ -9917,6 +9939,17 @@ __metadata:
     "@types/scheduler": "*"
     csstype: ^3.0.2
   checksum: c8dbce83c455e520e75f3649988f46100e3a3c0bf7241281ea5bd9067a0368290f0d7c6102e12e6ec9d649134b29a3ef4c421f376ec5aa06ed78cbdd8c144b4c
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.2.15":
+  version: 18.2.15
+  resolution: "@types/react@npm:18.2.15"
+  dependencies:
+    "@types/prop-types": "*"
+    "@types/scheduler": "*"
+    csstype: ^3.0.2
+  checksum: 36989f638201bfe2f4110b06c119180f6df9c0e13d7060481e82e7a745f81745a01ae543c478a25b61e0767cb52e82da2ad5b0dedacabf99339e523d06176705
   languageName: node
   linkType: hard
 
@@ -28350,7 +28383,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:18.2.0":
+"react-dom@npm:18.2.0, react-dom@npm:^18.2.0":
   version: 18.2.0
   resolution: "react-dom@npm:18.2.0"
   dependencies:
