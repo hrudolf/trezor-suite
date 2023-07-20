@@ -1,15 +1,36 @@
 /* eslint-disable no-console */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 import TrezorConnect from '@trezor/connect-web';
 
 export const ConnectManager = () => {
+    const [response, setResponse] = useState('');
+
     const getPublicKey = () => {
         TrezorConnect.getPublicKey({
             path: "m/49'/0'/0'",
             coin: 'btc',
         }).then((response: any) => {
             console.log(response);
+            setResponse(JSON.stringify(response));
+        });
+    };
+    const getFeatures = () => {
+        TrezorConnect.getFeatures().then(response => {
+            console.log(response);
+            setResponse(JSON.stringify(response));
+        });
+    };
+
+    const getAddress = () => {
+        TrezorConnect.getAddress({
+            showOnTrezor: true,
+            path: "m/49'/0'/0'/0/0",
+            coin: 'btc',
+        }).then(response => {
+            console.info(response);
+            setResponse(JSON.stringify(response));
         });
     };
 
@@ -43,6 +64,14 @@ export const ConnectManager = () => {
             <button type="button" onClick={getPublicKey}>
                 Get Public Key
             </button>
+            <button type="button" data-test="get-features" onClick={getFeatures}>
+                Get Features
+            </button>
+            <button type="button" data-test="get-address" onClick={getAddress}>
+                Get Address
+            </button>
+
+            <div id="result">{response}</div>
         </div>
     );
 };
