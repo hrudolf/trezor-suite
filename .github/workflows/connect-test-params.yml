@@ -1,15 +1,6 @@
 name: Test with trezor-user-env
-on:
-  workflow_call:
-    inputs:
-      methods:
-        description: "List of methods to include in tests (example applySettings,applyFlags,getFeatures)"
-        type: "string"
-        required: false
-      test-pattern:
-        description: "Test pattern to use (e.g. `init` or `methods`)"
-        type: "string"
-        required: true
+on: [push]
+
 
 jobs:
   node:
