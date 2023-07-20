@@ -1,32 +1,8 @@
 import { createMigrate, persistReducer } from 'redux-persist';
 import { Reducer } from '@reduxjs/toolkit';
 
-import { Account } from '@suite-common/wallet-types';
-
 import { initMmkvStorage } from './storage';
-
-interface PartialStateForMigration {
-    accounts: Account[];
-}
-
-// TODO create mock types for old and new account types
-
-const migrateAccountLabel = (oldAccounts: Account[]): MigratedAccount[] =>
-    oldAccounts.map(oldAccount => {
-        if (!oldAccount.metadata || !oldAccount.metadata.accountLabel) {
-            return oldAccount as MigratedAccount;
-        }
-
-        const { accountLabel, ...metadataWithoutAccountLabel } = oldAccount.metadata;
-
-        return {
-            ...oldAccount,
-            metadata: {
-                ...metadataWithoutAccountLabel,
-                accountLabel,
-            },
-        };
-    });
+import { migrateAccountLabel, PartialStateForMigration } from './migrations';
 
 export const preparePersistReducer = async <TReducerInitialState>({
     reducer,
@@ -40,8 +16,7 @@ export const preparePersistReducer = async <TReducerInitialState>({
     version: number;
 }) => {
     const migrations = {
-        // TODO type the whole wallet state
-        [version]: (oldState: any) => {
+        2: (oldState: any) => {
             const oldAccountsState: PartialStateForMigration = { accounts: oldState.accounts };
             const migratedAccounts = migrateAccountLabel(oldAccountsState.accounts);
             const migratedState = { ...oldState, accounts: migratedAccounts };
