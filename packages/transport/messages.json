@@ -4432,7 +4432,7 @@
                     "id": 43
                 },
                 "internal_model": {
-                    "type": "string",
+                    "type": "DeviceModelInternal",
                     "id": 44
                 },
                 "unit_color": {
@@ -4475,6 +4475,13 @@
                         "Capability_Shamir": 15,
                         "Capability_ShamirGroups": 16,
                         "Capability_PassphraseEntry": 17
+                    }
+                },
+                "DeviceModelInternal": {
+                    "values": {
+                        "T1B1": 1,
+                        "T2T1": 2,
+                        "T2B1": 3
                     }
                 }
             }

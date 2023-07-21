@@ -1,15 +1,10 @@
-// flowtype only
-// flowtype doesn't have `enum` declarations like typescript
-
 const fs = require('fs');
 const path = require('path');
 
 const json = require('../messages.json');
 const { RULE_PATCH, TYPE_PATCH, DEFINITION_PATCH, SKIP, UINT_TYPE } = require('./protobuf-patches');
 
-const args = process.argv.slice(2);
-
-const isTypescript = args.includes('typescript');
+const INDENT = ' '.repeat(4);
 
 // proto types to javascript types
 const FIELD_TYPES = {
@@ -24,8 +19,8 @@ const FIELD_TYPES = {
 
 const types = []; // { type: 'enum | message', name: string, value: string[], exact?: boolean };
 
-// enums used as keys (string), used as values (number) by default
-const ENUM_KEYS = [
+// enum's keys used as types, creates type from enum keys
+const ENUM_TO_TYPE_KEYS = [
     'InputScriptType',
     'OutputScriptType',
     'RequestType',
@@ -38,28 +33,30 @@ const ENUM_KEYS = [
     'HomescreenFormat',
 ];
 
+// enum's keys used also as values in enum
+const ENUM_KEY_VALUE_KEYS = ['DeviceModelInternal'];
+
 const parseEnum = (itemName, item) => {
-    const value = [];
-    const IS_KEY = ENUM_KEYS.includes(itemName);
+    const IS_KEY = ENUM_TO_TYPE_KEYS.includes(itemName);
+    const IS_KEY_VALUE = ENUM_KEY_VALUE_KEYS.includes(itemName);
+
     // declare enum
-    if (IS_KEY) {
-        value.push(`export enum Enum_${itemName} {`);
-    } else {
-        value.push(`export enum ${itemName} {`);
-    }
+    const enumName = IS_KEY ? `Enum_${itemName}` : itemName;
+    const value = [`export enum ${enumName} {`];
 
     // declare fields
-    Object.entries(item.values).forEach(([name, id]) => {
-        value.push(`    ${name} = ${id},`);
-    });
+    value.push(
+        ...Object.entries(item.values).map(
+            ([name, id]) => `${INDENT}${name} = ${IS_KEY_VALUE ? `'${name}'` : id},`,
+        ),
+    );
+
     // close enum declaration
-    value.push('}');
+    value.push('}', '');
 
     if (IS_KEY) {
-        value.push(`export type ${itemName} = keyof typeof Enum_${itemName};`);
+        value.push(`export type ${itemName} = keyof typeof ${enumName};`, '');
     }
-    // empty line
-    value.push('');
 
     types.push({
         type: 'enum',

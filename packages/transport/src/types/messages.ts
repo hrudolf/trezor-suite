@@ -108,6 +108,7 @@ export enum Enum_InputScriptType {
     SPENDP2SHWITNESS = 4,
     SPENDTAPROOT = 5,
 }
+
 export type InputScriptType = keyof typeof Enum_InputScriptType;
 
 export enum Enum_OutputScriptType {
@@ -119,6 +120,7 @@ export enum Enum_OutputScriptType {
     PAYTOP2SHWITNESS = 5,
     PAYTOTAPROOT = 6,
 }
+
 export type OutputScriptType = keyof typeof Enum_OutputScriptType;
 
 export enum DecredStakingSpendType {
@@ -262,6 +264,7 @@ export enum Enum_RequestType {
     TXORIGOUTPUT = 6,
     TXPAYMENTREQ = 7,
 }
+
 export type RequestType = keyof typeof Enum_RequestType;
 
 export type TxRequestDetailsType = {
@@ -963,6 +966,7 @@ export enum Enum_ButtonRequestType {
     ButtonRequest_PassphraseEntry = 19,
     ButtonRequest_PinEntry = 20,
 }
+
 export type ButtonRequestType = keyof typeof Enum_ButtonRequestType;
 
 // ButtonRequest
@@ -981,6 +985,7 @@ export enum Enum_PinMatrixRequestType {
     PinMatrixRequestType_WipeCodeFirst = 4,
     PinMatrixRequestType_WipeCodeSecond = 5,
 }
+
 export type PinMatrixRequestType = keyof typeof Enum_PinMatrixRequestType;
 
 // PinMatrixRequest
@@ -1458,6 +1463,7 @@ export enum Enum_BackupType {
     Slip39_Basic = 1,
     Slip39_Advanced = 2,
 }
+
 export type BackupType = keyof typeof Enum_BackupType;
 
 export enum Enum_SafetyCheckLevel {
@@ -1465,6 +1471,7 @@ export enum Enum_SafetyCheckLevel {
     PromptAlways = 1,
     PromptTemporarily = 2,
 }
+
 export type SafetyCheckLevel = keyof typeof Enum_SafetyCheckLevel;
 
 export enum Enum_HomescreenFormat {
@@ -1472,6 +1479,7 @@ export enum Enum_HomescreenFormat {
     Jpeg = 2,
     ToiG = 3,
 }
+
 export type HomescreenFormat = keyof typeof Enum_HomescreenFormat;
 
 // Initialize
@@ -1503,7 +1511,14 @@ export enum Enum_Capability {
     Capability_ShamirGroups = 16,
     Capability_PassphraseEntry = 17,
 }
+
 export type Capability = keyof typeof Enum_Capability;
+
+export enum DeviceModelInternal {
+    T1B1 = 'T1B1',
+    T2T1 = 'T2T1',
+    T2B1 = 'T2B1',
+}
 
 // Features
 export type Features = {
@@ -1548,7 +1563,7 @@ export type Features = {
     busy?: boolean;
     homescreen_format?: HomescreenFormat;
     hide_passphrase_from_host?: boolean;
-    internal_model: string;
+    internal_model: DeviceModelInternal;
     unit_color?: number;
     unit_btconly?: boolean;
     homescreen_width?: number;
@@ -1687,6 +1702,7 @@ export enum Enum_WordRequestType {
     WordRequestType_Matrix9 = 1,
     WordRequestType_Matrix6 = 2,
 }
+
 export type WordRequestType = keyof typeof Enum_WordRequestType;
 
 // WordRequest
