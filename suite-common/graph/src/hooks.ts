@@ -122,13 +122,15 @@ export function useGraphForAccounts(params: useGraphForAccountsParams): {
     return { graphPoints, graphEvents, isLoading, error, refetch };
 }
 
-export const useGetTimeFrameForHistoryHours = (timeframe: number | null) =>
+export const useGetTimeFrameForHistoryHours = (timeframeHours: number | null) =>
     useMemo(() => {
         const endOfTimeFrameDate = roundToNearestMinutes(new Date(), {
             nearestTo: 10,
             roundingMethod: 'floor',
         });
-        const startOfTimeFrameDate = timeframe ? subHours(endOfTimeFrameDate, timeframe) : null;
+        const startOfTimeFrameDate = timeframeHours
+            ? subHours(endOfTimeFrameDate, timeframeHours)
+            : null;
 
         return { endOfTimeFrameDate, startOfTimeFrameDate };
-    }, [timeframe]);
+    }, [timeframeHours]);

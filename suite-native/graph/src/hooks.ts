@@ -20,11 +20,11 @@ import { timeSwitchItems } from './components/TimeSwitch';
 type TimeframeHoursValue = number | null;
 
 // Default is 720 hours (1 month).
-const DEFAULT_GRAPH_TIMEFRAME = 720;
+const DEFAULT_GRAPH_TIMEFRAME_HOURS = 720;
 
 const portfolioGraphTimeframeAtom = atomWithUnecryptedStorage<TimeframeHoursValue>(
     'portfolioGraphTimeframe',
-    DEFAULT_GRAPH_TIMEFRAME,
+    DEFAULT_GRAPH_TIMEFRAME_HOURS,
 );
 
 const accountToGraphTimeframeMapAtom = atomWithUnecryptedStorage<
@@ -32,7 +32,7 @@ const accountToGraphTimeframeMapAtom = atomWithUnecryptedStorage<
 >('accountToGraphTimeframeMap', {});
 
 const useWatchTimeframeChangeForAnalytics = (
-    timeframe: TimeframeHoursValue,
+    timeframeHours: TimeframeHoursValue,
     networkSymbol?: NetworkSymbol,
 ) => {
     const isFirstRender = useRef(true);
@@ -45,7 +45,7 @@ const useWatchTimeframeChangeForAnalytics = (
         }
 
         const timeframeLabel = timeSwitchItems.find(
-            item => item.valueBackInHours === timeframe,
+            item => item.valueBackInHours === timeframeHours,
         )?.label;
 
         if (timeframeLabel) {
@@ -63,7 +63,7 @@ const useWatchTimeframeChangeForAnalytics = (
                 });
             }
         }
-    }, [timeframe, networkSymbol, isFirstRender]);
+    }, [timeframeHours, networkSymbol, isFirstRender]);
 };
 
 export const useGraphForSingleAccount = ({
@@ -78,7 +78,7 @@ export const useGraphForSingleAccount = ({
     const timeframe =
         accountKey in accountToGraphTimeframeMap
             ? accountToGraphTimeframeMap[accountKey]
-            : DEFAULT_GRAPH_TIMEFRAME;
+            : DEFAULT_GRAPH_TIMEFRAME_HOURS;
 
     // Save selected timeframe to the persistent storage.
     const handleSelectTimeFrame = (newValue: TimeframeHoursValue) =>
