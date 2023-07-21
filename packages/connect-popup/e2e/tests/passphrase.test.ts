@@ -2,7 +2,7 @@ import { test, Page } from '@playwright/test';
 import { TrezorUserEnvLink } from '@trezor/trezor-user-env-link';
 import { findElementByDataTest, waitAndClick } from '../support/helpers';
 
-const url = process.env.URL || 'http://localhost:8088/';
+const url = `${process.env.URL || 'http://localhost:8088/'}`;
 const bridgeVersion = '2.0.31';
 
 test.beforeAll(async () => {
@@ -38,11 +38,7 @@ test('input passphrase in popup and device accepts it', async ({ page }) => {
 
     await findElementByDataTest(popup, '@analytics/continue-button', 40 * 1000);
 
-    await waitAndClick(popup, [
-        '@analytics/continue-button',
-        '@permissions/confirm-button',
-        '@export-address/confirm-button',
-    ]);
+    await waitAndClick(popup, ['@analytics/continue-button', '@export-address/confirm-button']);
 
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('abc');
 
@@ -83,11 +79,7 @@ test('introduce passphrase in popup and device rejects it', async ({ page }) => 
 
     await findElementByDataTest(popup, '@analytics/continue-button', 40 * 1000);
 
-    await waitAndClick(popup, [
-        '@analytics/continue-button',
-        '@permissions/confirm-button',
-        '@export-address/confirm-button',
-    ]);
+    await waitAndClick(popup, ['@analytics/continue-button', '@export-address/confirm-button']);
 
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('abc');
 
@@ -129,11 +121,7 @@ test('introduce passphrase successfully next time should not ask for it', async 
 
     await findElementByDataTest(popup, '@analytics/continue-button', 40 * 1000);
 
-    await waitAndClick(popup, [
-        '@analytics/continue-button',
-        '@permissions/confirm-button',
-        '@export-address/confirm-button',
-    ]);
+    await waitAndClick(popup, ['@analytics/continue-button', '@export-address/confirm-button']);
 
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('abc');
 
@@ -157,7 +145,7 @@ test('introduce passphrase successfully next time should not ask for it', async 
         page.click("button[data-test='@submit-button']"),
     ]);
 
-    await waitAndClick(popup, ['@permissions/confirm-button', '@export-address/confirm-button']);
+    await waitAndClick(popup, ['@export-address/confirm-button']);
 
     // Popup should display address and ask user to confirm it without asking again for passphrase.
     await findElementByDataTest(popup, '@check-address-on-device');
@@ -190,11 +178,7 @@ test('introduce passphrase successfully reload 3rd party it should ask again for
 
     await findElementByDataTest(popup, '@analytics/continue-button', 40 * 1000);
 
-    await waitAndClick(popup, [
-        '@analytics/continue-button',
-        '@permissions/confirm-button',
-        '@export-address/confirm-button',
-    ]);
+    await waitAndClick(popup, ['@analytics/continue-button', '@export-address/confirm-button']);
 
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('abc');
 
@@ -221,7 +205,7 @@ test('introduce passphrase successfully reload 3rd party it should ask again for
         page.click("button[data-test='@submit-button']"),
     ]);
 
-    await waitAndClick(popup, ['@permissions/confirm-button', '@export-address/confirm-button']);
+    await waitAndClick(popup, ['@export-address/confirm-button']);
 
     // Popup should go to passphrase screen
     await popup.waitForSelector("input[data-test='@passphrase/input']");
@@ -261,11 +245,7 @@ test.only('passphrase mismatch', async ({ page }) => {
 
     [popup] = await Promise.all([page.waitForEvent('popup')]);
 
-    await waitAndClick(popup, [
-        '@analytics/continue-button',
-        '@permissions/confirm-button',
-        '@export-address/confirm-button',
-    ]);
+    await waitAndClick(popup, ['@analytics/continue-button', '@export-address/confirm-button']);
 
     // use different passphrase (not corresponding to device.state)
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('cba');
@@ -275,7 +255,7 @@ test.only('passphrase mismatch', async ({ page }) => {
     // Confirm Passphrase is correct.
     await TrezorUserEnvLink.api.pressYes();
 
-    await waitAndClick(popup, ['@invalid-passphrase/try-again', '@permissions/confirm-button']);
+    await waitAndClick(popup, ['@invalid-passphrase/try-again']);
     // Input right passphrase.
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('abc');
 
@@ -315,7 +295,7 @@ test.only('passphrase mismatch', async ({ page }) => {
 
     [popup] = await Promise.all([page.waitForEvent('popup')]);
 
-    await waitAndClick(popup, ['@permissions/confirm-button', '@export-address/confirm-button']);
+    await waitAndClick(popup, ['@export-address/confirm-button']);
 
     // Use different passphrase (not corresponding to device.state)
     (await popup.waitForSelector("input[data-test='@passphrase/input']")).type('cba');
