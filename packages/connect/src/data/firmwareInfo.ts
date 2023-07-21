@@ -17,14 +17,23 @@ import type {
 } from '../types';
 import { isVersionArray } from '../utils/versionUtils';
 
-const releases: { [key: number]: FirmwareRelease[] } = {};
-releases[1] = [];
-releases[2] = [];
+// TODO this type is only temporary till its exposed from connect
+export enum DeviceModel {
+    T1B1 = 'T1B1', // One
+    T2T1 = 'T2T1', // T
+    T2B1 = 'T2B1', // R
+}
 
-export const parseFirmware = (json: any, model: number) => {
+const releases: Record<keyof typeof DeviceModel, FirmwareRelease[]> = {
+    T1B1: [],
+    T2T1: [],
+    T2B1: [],
+};
+
+export const parseFirmware = (json: any, deviceModel: DeviceModel) => {
     Object.keys(json).forEach(key => {
         const release = json[key];
-        releases[model].push({
+        releases[deviceModel].push({
             ...release,
         });
     });
@@ -238,7 +247,11 @@ export const getFirmwareStatus = (features: Features) => {
         return 'unknown';
     }
 
-    const info = getInfo({ features, releases: releases[features.major_version] });
+    const info = getInfo({
+        features,
+        releases:
+            releases[features?.internal_model as DeviceModel /* FIXME type, handle undefined */],
+    });
 
     // should not happen, possibly if releases list contains inconsistent data or so
     if (!info) return 'unknown';
@@ -251,6 +264,10 @@ export const getFirmwareStatus = (features: Features) => {
 };
 
 export const getRelease = (features: Features) =>
-    getInfo({ features, releases: releases[features.major_version] });
+    getInfo({
+        features,
+        releases:
+            releases[features?.internal_model as DeviceModel /* FIXME type, handle undefined */],
+    });
 
-export const getReleases = (model: number) => releases[model];
+export const getReleases = (deviceModel: DeviceModel) => releases[deviceModel];

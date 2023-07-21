@@ -2,7 +2,7 @@
 
 import { httpRequest } from '../utils/assets';
 import { parseCoinsJson } from './coinInfo';
-import { parseFirmware } from './firmwareInfo';
+import { parseFirmware, DeviceModel } from './firmwareInfo';
 import { parseBridgeJSON } from './transportInfo';
 import { config } from './config';
 
@@ -37,8 +37,9 @@ export class DataManager {
         parseCoinsJson(this.assets.coins);
 
         // parse firmware definitions
-        parseFirmware(this.assets['firmware-t1'], 1);
-        parseFirmware(this.assets['firmware-t2'], 2);
+        parseFirmware(this.assets['firmware-t1b1'], DeviceModel.T1B1);
+        parseFirmware(this.assets['firmware-t2t1'], DeviceModel.T2T1);
+        parseFirmware(this.assets['firmware-t2b1'], DeviceModel.T2B1);
     }
 
     static getProtobufMessages() {
