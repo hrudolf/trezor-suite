@@ -84,7 +84,7 @@ export class PopupManager extends EventEmitter {
         // we close it so we can open a new one.
         // This is necessary when popup window is in error state and we want to open a new one.
         if (this.popupWindow && !this.locked) {
-            this.popupWindow.close();
+            this.close();
         }
 
         const openFn = this.open.bind(this);
