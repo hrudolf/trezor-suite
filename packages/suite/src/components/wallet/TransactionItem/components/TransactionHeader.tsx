@@ -1,6 +1,6 @@
 import React from 'react';
 import { Translation } from 'src/components/suite';
-import { getTxHeaderSymbol } from '@suite-common/wallet-utils';
+import { getTxHeaderSymbol, shortTokenSymbol } from '@suite-common/wallet-utils';
 import { WalletAccountTransaction } from 'src/types/wallet';
 import { AccountTransaction } from '@trezor/connect';
 
@@ -39,7 +39,7 @@ export const TransactionHeader = ({ transaction, isPending }: TransactionHeaderP
     }
 
     const isMultiTokenTransaction = transaction.tokens.length > 1;
-    const symbol = getTxHeaderSymbol(transaction).toUpperCase();
+    const symbol = shortTokenSymbol(getTxHeaderSymbol(transaction).toUpperCase());
 
     switch (transaction.type) {
         case 'sent':

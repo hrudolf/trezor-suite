@@ -39,3 +39,6 @@ export const enhanceTokensWithRates = (tokens: Account['tokens'], coins: CoinFia
 
     return tokensWithRates;
 };
+
+export const shortTokenSymbol = (symbol: string): string =>
+    symbol.length > 8 ? `${symbol.slice(0, 10)}...` : symbol;
