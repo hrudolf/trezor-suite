@@ -30,8 +30,7 @@ async function receiveRest(
     if (data == null) {
         throw new Error('Received no data.');
     }
-
-    parsedInput.append(data);
+    parsedInput.append(data.slice(1));
 
     return receiveRest(parsedInput, receiver, expectedLength);
 }
@@ -40,6 +39,7 @@ async function receiveBuffer(receiver: () => Promise<ArrayBuffer>) {
     const data = await receiver();
     const { length, typeId, restBuffer } = decodeProtocol.decodeChunked(data);
     const decoded = new ByteBuffer(length);
+
     if (length) {
         decoded.append(restBuffer);
     }
