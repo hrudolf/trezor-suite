@@ -12,7 +12,6 @@ import {
     formatCoinBalance,
     localizeNumber,
     networkAmountToSatoshi,
-    shortTokenSymbol,
 } from '@suite-common/wallet-utils';
 import { isSignValuePositive } from '@suite-common/formatters';
 
@@ -66,7 +65,7 @@ export const FormattedCryptoAmount = ({
     const areSatsSupported = !!networkFeatures?.includes('amount-unit');
 
     let formattedValue = value;
-    let formattedSymbol = symbol && shortTokenSymbol(symbol?.toUpperCase());
+    let formattedSymbol = symbol?.toUpperCase();
 
     const isSatoshis = areSatsSupported && areSatsDisplayed;
 

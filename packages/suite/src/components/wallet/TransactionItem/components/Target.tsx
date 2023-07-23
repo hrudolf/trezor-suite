@@ -9,6 +9,7 @@ import {
     formatAmount,
     formatNetworkAmount,
     isNftTokenTransfer,
+    shortTokenSymbol,
 } from '@suite-common/wallet-utils';
 import { WalletAccountTransaction } from 'src/types/wallet';
 import { notificationsActions } from '@suite-common/toast-notifications';
@@ -57,7 +58,7 @@ export const TokenTransfer = ({
                 ) : (
                     <StyledFormattedCryptoAmount
                         value={formatAmount(transfer.amount, transfer.decimals)}
-                        symbol={transfer.symbol}
+                        symbol={shortTokenSymbol(transfer.symbol)}
                         signValue={operation}
                     />
                 )
