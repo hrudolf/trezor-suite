@@ -5,6 +5,8 @@ import CopyPlugin from 'copy-webpack-plugin';
 
 const DIST = path.resolve(__dirname, '../build');
 
+console.log('process.env.__TREZOR_CONNECT_SRC', process.env.__TREZOR_CONNECT_SRC);
+
 const config: webpack.Configuration = {
     target: 'web',
     mode: 'production',

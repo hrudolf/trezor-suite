@@ -6,7 +6,8 @@
         "lint:js": "yarn g:eslint '**/*.{ts,tsx,js}'",
         "test:e2e": "yarn xvfb-maybe -- playwright test --config=./e2e/playwright.config.ts",
         "prepare": "node updateWebextensions.js",
-        "build": "rimraf build && yarn prepare && TS_NODE_PROJECT=\"tsconfig.json\" yarn webpack --config ./webpack/prod.webpack.config.ts"
+        "build": "rimraf build && yarn prepare && TS_NODE_PROJECT=\"tsconfig.json\" yarn webpack --config ./webpack/prod.webpack.config.ts",
+        "only:build": "rimraf build && TS_NODE_PROJECT=\"tsconfig.json\" yarn webpack --config ./webpack/prod.webpack.config.ts"
     },
     "devDependencies": {
         "@playwright/test": "^1.35.1",

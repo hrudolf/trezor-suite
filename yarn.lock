@@ -7878,30 +7878,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@trezor/connect-explorer-extension@workspace:packages/connect-explorer-extension":
-  version: 0.0.0-use.local
-  resolution: "@trezor/connect-explorer-extension@workspace:packages/connect-explorer-extension"
-  dependencies:
-    "@trezor/connect-explorer": "workspace:^"
-    "@trezor/connect-web": "workspace:^"
-    "@types/react": ^18.2.15
-    copy-webpack-plugin: ^11.0.0
-    html-webpack-plugin: ^5.5.3
-    react: ^18.2.0
-    react-dom: ^18.2.0
-    react-redux: ^8.1.1
-    react-router-dom: ^6.14.2
-    rimraf: ^5.0.1
-    typescript: 4.9.5
-    webpack: ^5.87.0
-    webpack-cli: ^5.1.4
-    webpack-merge: ^5.9.0
-    webpack-plugin-serve: ^1.6.0
-  peerDependencies:
-    react: 18.2.0
-  languageName: unknown
-  linkType: soft
-
 "@trezor/connect-explorer@workspace:^, @trezor/connect-explorer@workspace:packages/connect-explorer":
   version: 0.0.0-use.local
   resolution: "@trezor/connect-explorer@workspace:packages/connect-explorer"
@@ -28944,38 +28920,6 @@ __metadata:
     redux:
       optional: true
   checksum: d903aa79b12154258fd76b8e61fcf56f72123f69c31033b262805646371e23822cd0cd11d24194cda1e03569a7b1bf86e935cd57a9bab4523186804ed2742fac
-  languageName: node
-  linkType: hard
-
-"react-redux@npm:^8.1.1":
-  version: 8.1.1
-  resolution: "react-redux@npm:8.1.1"
-  dependencies:
-    "@babel/runtime": ^7.12.1
-    "@types/hoist-non-react-statics": ^3.3.1
-    "@types/use-sync-external-store": ^0.0.3
-    hoist-non-react-statics: ^3.3.2
-    react-is: ^18.0.0
-    use-sync-external-store: ^1.0.0
-  peerDependencies:
-    "@types/react": ^16.8 || ^17.0 || ^18.0
-    "@types/react-dom": ^16.8 || ^17.0 || ^18.0
-    react: ^16.8 || ^17.0 || ^18.0
-    react-dom: ^16.8 || ^17.0 || ^18.0
-    react-native: ">=0.59"
-    redux: ^4 || ^5.0.0-beta.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-    "@types/react-dom":
-      optional: true
-    react-dom:
-      optional: true
-    react-native:
-      optional: true
-    redux:
-      optional: true
-  checksum: 370676330727764d78f35e9c5a0ed0591d79482fe9b70fffcab4aa6bcccc6194e4f1ebd818b4b390351dea5557e70d3bd4d95d7a0ac9baa1f45d6bf2230ee713
   languageName: node
   linkType: hard
 

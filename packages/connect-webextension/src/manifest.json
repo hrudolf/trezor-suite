@@ -1,5 +1,5 @@
 {
-    "name": "@trezor/connect web extension mv3 connect explorer example",
+    "name": "@trezor/connect-webextension",
     "manifest_version": 3,
     "version": "1.0.0",
     "action": {
@@ -7,7 +7,11 @@
     },
     "content_scripts": [
         {
-            "matches": ["*://connect.trezor.io/9/popup.html"],
+            "matches": [
+                "*://connect.trezor.io/9/popup.html",
+                "*://suite.corp.sldev.cz/connect/develop/popup.html",
+                "http://*/*"
+            ],
             "js": ["./vendor/trezor-content-script.js"]
         }
     ],
