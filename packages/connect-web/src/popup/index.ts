@@ -65,9 +65,6 @@ export class PopupManager extends EventEmitter {
     }
 
     request(lazyLoad = false) {
-        // popup request
-        // TODO: ie - open immediately and hide it but post handshake after timeout
-
         // bring popup window to front
         if (this.locked) {
             if (this.popupWindow) {
@@ -83,8 +80,12 @@ export class PopupManager extends EventEmitter {
         // When requesting a popup window and there is a reference to popup window and it is not locked
         // we close it so we can open a new one.
         // This is necessary when popup window is in error state and we want to open a new one.
-        if (this.popupWindow && !this.locked) {
-            this.popupWindow.close();
+        if (this.popupWindow) {
+            this.close();
+        }
+
+        if (lazyLoad && !this.popupWindow && this.settings.env === 'webextension') {
+            return;
         }
 
         const openFn = this.open.bind(this);
@@ -156,6 +157,7 @@ export class PopupManager extends EventEmitter {
                             active: true,
                         },
                         tabs => {
+                            // Storing the id of the extension tab for later use.
                             this.extensionTabId = tabs[0].id as number;
 
                             chrome.tabs.create(
@@ -164,6 +166,7 @@ export class PopupManager extends EventEmitter {
                                     index: tabs[0].index + 1,
                                 },
                                 tab => {
+                                    // Storing the reference of the just opened popup window.
                                     this.popupWindow = tab;
                                 },
                             );
