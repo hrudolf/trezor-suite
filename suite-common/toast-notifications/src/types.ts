@@ -135,6 +135,11 @@ export type ToastPayload = (
 ) &
     NotificationOptions;
 
+export type AnalyticsErrorToastPayload = {
+    type: 'error';
+    error: string;
+};
+
 export type NotificationEventPayload = (
     | {
           // only temporary, must be same as AUTH_DEVICE value in packages/suite/src/actions/suite/constants/suiteConstants.ts

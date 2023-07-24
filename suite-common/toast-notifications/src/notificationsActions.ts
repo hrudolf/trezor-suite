@@ -1,9 +1,16 @@
 import { createAction } from '@reduxjs/toolkit';
 
 import { createActionWithExtraDeps } from '@suite-common/redux-utils';
+import { EventType, analytics } from '@trezor/suite-analytics';
 
 import { selectVisibleNotificationsByType } from './notificationsSelectors';
-import { NotificationId, NotificationEntry, NotificationEventPayload, ToastPayload } from './types';
+import {
+    NotificationId,
+    NotificationEntry,
+    NotificationEventPayload,
+    ToastPayload,
+    AnalyticsErrorToastPayload,
+} from './types';
 
 export const ACTION_PREFIX = '@common/in-app-notifications';
 
@@ -58,6 +65,17 @@ export const addEvent = createActionWithExtraDeps(
     }),
 );
 
+export const addAnalyticsErrorToast = (toastPayload: AnalyticsErrorToastPayload) => {
+    const toastEntry = addToast(toastPayload);
+    analytics.report({
+        type: EventType.ToastError,
+        payload: {
+            error: toastPayload.error,
+        },
+    });
+    return toastEntry;
+};
+
 export const notificationsActions = {
     close,
     resetUnseen,
@@ -65,4 +83,5 @@ export const notificationsActions = {
     addToast,
     addEvent,
     addToastOnce,
+    addAnalyticsErrorToast,
 };

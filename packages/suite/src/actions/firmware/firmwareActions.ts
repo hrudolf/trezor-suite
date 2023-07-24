@@ -318,7 +318,7 @@ export const checkFirmwareAuthenticity = () => async (dispatch: Dispatch, getSta
         }
     } else {
         dispatch(
-            notificationsActions.addToast({
+            notificationsActions.addAnalyticsErrorToast({
                 type: 'error',
                 error: `Unable to validate firmware: ${result.payload.error}`,
             }),
