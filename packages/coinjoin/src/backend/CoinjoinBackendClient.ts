@@ -11,6 +11,7 @@ import type {
 import type { CoinjoinBackendSettings, Logger } from '../types';
 import { FILTERS_REQUEST_TIMEOUT, HTTP_REQUEST_GAP, HTTP_REQUEST_TIMEOUT } from '../constants';
 import { CoinjoinWebsocketController, BlockbookWS } from './CoinjoinWebsocketController';
+import { isWsError403, resetIdentityCircuit } from './backendUtils';
 
 type CoinjoinBackendClientSettings = CoinjoinBackendSettings & {
     timeout?: number;
@@ -134,19 +135,34 @@ export class CoinjoinBackendClient {
         method: T,
         ...params: Parameters<BlockbookWS[T]>
     ) {
-        return scheduleAction(
-            signal => this.blockbookWS({ ...options, signal }, method, ...params),
-            { attempts: 3, timeout: HTTP_REQUEST_TIMEOUT, gap: HTTP_REQUEST_GAP, ...options },
-        );
+        // `options` can't be spread as the identity inside could be updated from `blockbookWS`
+        // TODO pass & handle abort signal inside blockbookWS
+        return scheduleAction(() => this.blockbookWS(options, method, ...params), {
+            attempts: 3,
+            timeout: HTTP_REQUEST_TIMEOUT,
+            gap: HTTP_REQUEST_GAP,
+            ...options,
+        });
     }
 
     protected async blockbookWS<T extends keyof BlockbookWS>(
-        { identity, timeout }: RequestOptions = {},
+        options: RequestOptions = {},
         method: T,
         ...params: Parameters<BlockbookWS[T]>
     ): Promise<Awaited<ReturnType<BlockbookWS[T]>>> {
+        const { identity, timeout } = options;
         const url = this.blockbookUrls[this.blockbookRequestId++ % this.blockbookUrls.length];
-        const api = await this.websockets.getOrCreate({ url, timeout, identity });
+        const api = await this.websockets.getOrCreate({ url, timeout, identity }).catch(err => {
+            // switch identity in case of 403 (possibly blocked by Cloudflare)
+            if (isWsError403(err) && identity) {
+                const index = this.identitiesBlockbook.indexOf(identity);
+                if (index >= 0) {
+                    options.identity = resetIdentityCircuit(identity);
+                    this.identitiesBlockbook[index] = options.identity;
+                }
+            }
+            throw err;
+        });
         this.logger?.debug(`WS ${method} ${params} ${this.websockets.getSocketId(url, identity)}`);
         return (api[method] as any).apply(api, params);
     }
@@ -194,9 +210,7 @@ export class CoinjoinBackendClient {
                 return { status: 'not-found' };
             // possibly blocked by cloudflare
             case 403: {
-                const [identity] = this.identityWabisabi.split(':');
-                // set random password to reset TOR circuit for this identity
-                this.identityWabisabi = `${identity}:${Math.random()}`;
+                this.identityWabisabi = resetIdentityCircuit(this.identityWabisabi);
             }
             // no default
         }
