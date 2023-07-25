@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { useSelector } from 'react-redux';
-
-import { useAtom } from 'jotai';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
     AccountItem,
@@ -9,27 +7,24 @@ import {
     useGetTimeFrameForHistoryHours,
     useGraphForAccounts,
 } from '@suite-common/graph';
-import { selectAccountByKey, selectMainnetAccounts } from '@suite-common/wallet-core';
+import {
+    AccountsRootState,
+    selectAccountByKey,
+    selectMainnetAccounts,
+} from '@suite-common/wallet-core';
 import { AccountKey } from '@suite-common/wallet-types';
 import { analytics, EventType } from '@suite-native/analytics';
 import { NetworkSymbol } from '@suite-common/wallet-config';
-import { atomWithUnecryptedStorage } from '@suite-native/storage';
 
 import { timeSwitchItems } from './components/TimeSwitch';
-
-type TimeframeHoursValue = number | null;
-
-// Default is 720 hours (1 month).
-const DEFAULT_GRAPH_TIMEFRAME_HOURS = 720;
-
-const portfolioGraphTimeframeAtom = atomWithUnecryptedStorage<TimeframeHoursValue>(
-    'portfolioGraphTimeframe',
-    DEFAULT_GRAPH_TIMEFRAME_HOURS,
-);
-
-const accountToGraphTimeframeMapAtom = atomWithUnecryptedStorage<
-    Record<AccountKey, TimeframeHoursValue>
->('accountToGraphTimeframeMap', {});
+import { TimeframeHoursValue } from './types';
+import {
+    GraphSliceRootState,
+    selectAccountGraphTimeframe,
+    selectPortfolioGraphTimeframe,
+    setAccountGraphTimeframe,
+    setPortfolioGraphTimeframe,
+} from './slice';
 
 const useWatchTimeframeChangeForAnalytics = (
     timeframeHours: TimeframeHoursValue,
@@ -70,24 +65,19 @@ export const useGraphForSingleAccount = ({
     accountKey,
     fiatCurrency,
 }: CommonUseGraphParams & { accountKey: AccountKey }) => {
-    const account = useSelector((state: any) => selectAccountByKey(state, accountKey));
-    const [accountToGraphTimeframeMap, setAccountToGraphTimeframeMap] = useAtom(
-        accountToGraphTimeframeMapAtom,
+    const dispatch = useDispatch();
+    const account = useSelector((state: AccountsRootState) =>
+        selectAccountByKey(state, accountKey),
+    );
+    const accountGraphTimeframe = useSelector((state: GraphSliceRootState) =>
+        selectAccountGraphTimeframe(state, accountKey),
     );
 
-    const timeframe =
-        accountKey in accountToGraphTimeframeMap
-            ? accountToGraphTimeframeMap[accountKey]
-            : DEFAULT_GRAPH_TIMEFRAME_HOURS;
+    const handleSelectAccountTimeframe = (timeframeHours: TimeframeHoursValue) =>
+        dispatch(setAccountGraphTimeframe({ accountKey, timeframeHours }));
 
-    // Save selected timeframe to the persistent storage.
-    const handleSelectTimeFrame = (newValue: TimeframeHoursValue) =>
-        setAccountToGraphTimeframeMap(prevValue => ({
-            ...prevValue,
-            [accountKey]: newValue,
-        }));
-
-    const { startOfTimeFrameDate, endOfTimeFrameDate } = useGetTimeFrameForHistoryHours(timeframe);
+    const { startOfTimeFrameDate, endOfTimeFrameDate } =
+        useGetTimeFrameForHistoryHours(accountGraphTimeframe);
 
     const accounts = useMemo(() => {
         if (!account) return [];
@@ -99,7 +89,7 @@ export const useGraphForSingleAccount = ({
         ] as AccountItem[];
     }, [account]);
 
-    useWatchTimeframeChangeForAnalytics(timeframe, account?.symbol);
+    useWatchTimeframeChangeForAnalytics(accountGraphTimeframe, account?.symbol);
 
     return {
         ...useGraphForAccounts({
@@ -109,16 +99,16 @@ export const useGraphForSingleAccount = ({
             endOfTimeFrameDate,
             isPortfolioGraph: false,
         }),
-        timeframe,
-        onSelectTimeFrame: handleSelectTimeFrame,
+        timeframe: accountGraphTimeframe,
+        onSelectTimeFrame: handleSelectAccountTimeframe,
     };
 };
 
 export const useGraphForAllAccounts = ({ fiatCurrency }: CommonUseGraphParams) => {
+    const dispatch = useDispatch();
     const accounts = useSelector(selectMainnetAccounts);
-    const [portfolioGraphTimeframe, setPortfolioGraphTimeframe] = useAtom(
-        portfolioGraphTimeframeAtom,
-    );
+    const portfolioGraphTimeframe = useSelector(selectPortfolioGraphTimeframe);
+
     const { startOfTimeFrameDate, endOfTimeFrameDate } =
         useGetTimeFrameForHistoryHours(portfolioGraphTimeframe);
 
@@ -131,6 +121,9 @@ export const useGraphForAllAccounts = ({ fiatCurrency }: CommonUseGraphParams) =
         [accounts],
     );
 
+    const handleSelectPortfolioTimeframe = (timeframeHours: TimeframeHoursValue) =>
+        dispatch(setPortfolioGraphTimeframe({ timeframeHours }));
+
     useWatchTimeframeChangeForAnalytics(portfolioGraphTimeframe);
 
     return {
@@ -142,6 +135,6 @@ export const useGraphForAllAccounts = ({ fiatCurrency }: CommonUseGraphParams) =
             isPortfolioGraph: true,
         }),
         timeframe: portfolioGraphTimeframe,
-        onSelectTimeFrame: setPortfolioGraphTimeframe,
+        onSelectTimeFrame: handleSelectPortfolioTimeframe,
     };
 };
