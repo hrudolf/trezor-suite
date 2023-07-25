@@ -1,28 +1,32 @@
-import {
-    Discovery,
-    PartialDiscovery,
-    selectDiscovery,
-    selectDiscoveryByDeviceState,
-} from 'src/reducers/wallet/discoveryReducer';
-import { SUITE } from 'src/actions/suite/constants';
-import * as metadataActions from 'src/actions/suite/metadataActions';
-import { NETWORKS } from 'src/config/wallet';
-import { Dispatch, GetState, TrezorDevice } from 'src/types/suite';
-import { Account } from 'src/types/wallet';
 import { createAction } from '@reduxjs/toolkit';
-import { selectEnabledNetworks } from 'src/reducers/wallet/settingsReducer';
-import { selectDevice, selectDiscoveryForDevice } from 'src/reducers/suite/suiteReducer';
-import { selectMetadata } from 'src/reducers/suite/metadataReducer';
 
 import { getDerivationType, isTrezorConnectBackendType } from '@suite-common/wallet-utils';
 import { DiscoveryItem } from '@suite-common/wallet-types';
-import { accountsActions } from '@suite-common/wallet-core';
+import { accountsActions, selectAccounts } from '@suite-common/wallet-core';
 import { notificationsActions } from '@suite-common/toast-notifications';
 import { getDeviceModel, getFirmwareVersion } from '@trezor/device-utils';
 import TrezorConnect, { BundleProgress, AccountInfo, UI } from '@trezor/connect';
 import { versionUtils } from '@trezor/utils';
 import { DiscoveryStatus } from '@suite-common/wallet-constants';
 import { settingsCommonConfig } from '@suite-common/suite-config';
+import { createThunk } from '@suite-common/redux-utils';
+
+import { selectMetadata } from 'src/reducers/suite/metadataReducer';
+import { selectDevice, selectDiscoveryForDevice } from 'src/reducers/suite/suiteReducer';
+import { selectEnabledNetworks } from 'src/reducers/wallet/settingsReducer';
+import { Account } from 'src/types/wallet';
+import { Dispatch, GetState, TrezorDevice } from 'src/types/suite';
+import { NETWORKS } from 'src/config/wallet';
+import * as metadataActions from 'src/actions/suite/metadataActions';
+import { SUITE } from 'src/actions/suite/constants';
+import {
+    Discovery,
+    PartialDiscovery,
+    selectDiscovery,
+    selectDiscoveryByDeviceState,
+} from 'src/reducers/wallet/discoveryReducer';
+
+import { selectDevices } from '../../reducers/suite/deviceReducer';
 
 const MODULE_PREFIX = '@common/wallet-core/discovery';
 
@@ -65,15 +69,15 @@ export const updateDiscovery = createAction(
     (payload: PartialDiscovery) => ({ payload }),
 );
 
-const calculateProgress =
-    (discovery: Discovery) =>
-    (_dispatch: Dispatch, getState: GetState): PartialDiscovery => {
+const calculateProgress = createThunk(
+    `${MODULE_PREFIX}/calculateProgress}`,
+    (discovery: Discovery, { getState }) => {
         let total = LIMIT * discovery.networks.length;
         let loaded = 0;
-        const accounts = getState().wallet.accounts.filter(
-            a => a.deviceState === discovery.deviceState,
-        );
-        accounts.forEach(a => {
+        const accounts = selectAccounts(getState());
+        const accountsByDeviceState = accounts.filter(a => a.deviceState === discovery.deviceState);
+
+        accountsByDeviceState.forEach(a => {
             if (discovery.networks.includes(a.symbol)) {
                 loaded++;
                 const indexBeyondLimit = a.index + 1 >= LIMIT;
@@ -93,11 +97,25 @@ const calculateProgress =
             loaded,
             total,
         };
-    };
+    },
+);
 
-const handleProgress =
-    (event: ProgressEvent, deviceState: string, item: DiscoveryItem, metadataEnabled: boolean) =>
-    (dispatch: Dispatch, getState: GetState) => {
+const handleProgress = createThunk(
+    `${MODULE_PREFIX}/handleProgress`,
+    (
+        {
+            event,
+            deviceState,
+            item,
+            metadataEnabled,
+        }: {
+            event: ProgressEvent;
+            deviceState: string;
+            item: DiscoveryItem;
+            metadataEnabled: boolean;
+        },
+        { dispatch, getState },
+    ) => {
         // get fresh discovery data
         const discovery = selectDiscoveryByDeviceState(getState(), deviceState);
         // ignore progress event when:
@@ -142,9 +160,11 @@ const handleProgress =
                 authConfirm,
                 bundleSize: discovery.bundleSize - 1,
                 failed,
+                deviceState,
             }),
         );
-    };
+    },
+);
 
 const filterUnavailableNetworks = (enabledNetworks: Account['symbol'][], device?: TrezorDevice) =>
     NETWORKS.filter(n => {
@@ -167,21 +187,20 @@ const filterUnavailableNetworks = (enabledNetworks: Account['symbol'][], device?
         );
     });
 
-const getBundle =
-    (discovery: Discovery, device: TrezorDevice) =>
-    (_d: Dispatch, getState: GetState): DiscoveryItem[] => {
+const getBundle = createThunk(
+    `${MODULE_PREFIX}/getBundle`,
+    ({ discovery, device }: { discovery: Discovery; device: TrezorDevice }, { getState }) => {
         const bundle: DiscoveryItem[] = [];
+        const accounts = selectAccounts(getState());
         // find all accounts
-        const accounts = getState().wallet.accounts.filter(
-            a => a.deviceState === discovery.deviceState,
-        );
+        const accountsByDeviceState = accounts.filter(a => a.deviceState === discovery.deviceState);
 
         // corner-case: discovery is running so it's at least second iteration
         // progress event wasn't emitted from '@trezor/connect' so there are no accounts, neither loaded or failed
         // return empty bundle to complete discovery
         if (
             discovery.status === DiscoveryStatus.RUNNING &&
-            !accounts.length &&
+            !accountsByDeviceState.length &&
             !discovery.failed.length
         ) {
             return bundle;
@@ -191,7 +210,7 @@ const getBundle =
         networks.forEach(configNetwork => {
             // find all existed accounts
             const accountType = configNetwork.accountType || 'normal';
-            const prevAccounts = accounts
+            const prevAccounts = accountsByDeviceState
                 .filter(
                     account =>
                         account.accountType === accountType &&
@@ -229,36 +248,45 @@ const getBundle =
             }
         });
         return bundle;
-    };
+    },
+);
 
-export const updateNetworkSettings = () => (dispatch: Dispatch, getState: GetState) => {
-    const enabledNetworks = selectEnabledNetworks(getState());
-    const discovery = selectDiscovery(getState());
+export const updateNetworkSettings = createThunk(
+    `${MODULE_PREFIX}/updateNetworkSettings`,
+    (_, { dispatch, getState }) => {
+        const enabledNetworks = selectEnabledNetworks(getState());
+        const discovery = selectDiscovery(getState());
+        const devices = selectDevices(getState());
 
-    discovery.forEach(d => {
-        const device = getState().devices.find(dev => dev.state === d.deviceState);
-        const networks = filterUnavailableNetworks(enabledNetworks, device).map(n => n.symbol);
+        discovery.forEach(d => {
+            const device = devices.find(dev => dev.state === d.deviceState);
+            const networks = filterUnavailableNetworks(enabledNetworks, device).map(n => n.symbol);
 
-        const progress = dispatch(
-            calculateProgress({
-                ...d,
-                networks,
-                failed: [],
-            }),
-        );
-        dispatch(
-            updateDiscovery({
-                ...progress,
-                networks,
-                failed: [],
-            }),
-        );
-    });
-};
+            const progress = dispatch(
+                calculateProgress({
+                    ...d,
+                    networks,
+                    failed: [],
+                }),
+            );
+            dispatch(
+                updateDiscovery({
+                    ...progress,
+                    networks,
+                    failed: [],
+                    deviceState: d.deviceState,
+                }),
+            );
+        });
+    },
+);
 
-const getAvailableCardanoDerivations =
-    (deviceState: string, device: TrezorDevice) =>
-    async (dispatch: Dispatch): Promise<('normal' | 'legacy' | 'ledger')[] | undefined> => {
+const getAvailableCardanoDerivations = createThunk(
+    `${MODULE_PREFIX}/getAvailableCardanoDerivations`,
+    async (
+        { device, deviceState }: { deviceState: string; device: TrezorDevice },
+        { dispatch },
+    ): Promise<('normal' | 'legacy' | 'ledger')[] | undefined> => {
         // If icarus and icarus-trezor derivations return same pub key
         // we can skip derivation of the latter as it would discover same accounts.
         // Ledger derivation will always result in different pub key except in shamir where all derivations are the same
@@ -328,7 +356,8 @@ const getAvailableCardanoDerivations =
 
         // each pub key is different
         return ['normal', 'legacy', 'ledger'];
-    };
+    },
+);
 
 export const create =
     (deviceState: string, device: TrezorDevice) => (dispatch: Dispatch, getState: GetState) => {
@@ -351,9 +380,9 @@ export const create =
         });
     };
 
-export const start =
-    () =>
-    async (dispatch: Dispatch, getState: GetState): Promise<void> => {
+export const start = createThunk(
+    `${MODULE_PREFIX}/start`,
+    async (_, { dispatch, getState }): Promise<void> => {
         const device = selectDevice(getState());
         const metadata = selectMetadata(getState());
         const discovery = selectDiscoveryForDevice(getState());
@@ -420,8 +449,8 @@ export const start =
             availableCardanoDerivations === undefined
         ) {
             // check if discovery of legacy (icarus-trezor) or ledger accounts is needed and update discovery accordingly
-            availableCardanoDerivations = await dispatch(
-                getAvailableCardanoDerivations(deviceState, device),
+            availableCardanoDerivations = dispatch(
+                getAvailableCardanoDerivations({ deviceState, device }),
             );
             if (!availableCardanoDerivations) {
                 // Edge case where getAvailableCardanoDerivations dispatches error, stops discovery and returns undefined.
@@ -437,7 +466,12 @@ export const start =
         }
 
         // prepare bundle of accounts to discover, exclude unsupported account types
-        const bundle = dispatch(getBundle({ ...discovery, availableCardanoDerivations }, device));
+        const bundle = dispatch(
+            getBundle({
+                discovery: { ...discovery, availableCardanoDerivations },
+                device,
+            }),
+        );
 
         // discovery process complete
         if (bundle.length === 0) {
@@ -480,7 +514,9 @@ export const start =
         const onBundleProgress = (event: ProgressEvent) => {
             const { progress } = event;
             // pass more parameters to handler
-            dispatch(handleProgress(event, deviceState, bundle[progress], metadataEnabled));
+            dispatch(
+                handleProgress({ event, deviceState, item: bundle[progress], metadataEnabled }),
+            );
         };
 
         TrezorConnect.on<AccountInfo | null>(UI.BUNDLE_PROGRESS, onBundleProgress);
@@ -602,9 +638,10 @@ export const start =
                 dispatch(notificationsActions.addToast({ type: 'discovery-error', error }));
             }
         }
-    };
+    },
+);
 
-export const stop = () => (dispatch: Dispatch, getState: GetState) => {
+export const stop = createThunk(`${MODULE_PREFIX}/stopDiscovery`, (_, { dispatch, getState }) => {
     const discovery = selectDiscoveryForDevice(getState());
     if (discovery && discovery.running) {
         dispatch(
@@ -617,25 +654,29 @@ export const stop = () => (dispatch: Dispatch, getState: GetState) => {
 
         return discovery.running.promise;
     }
-};
+});
 
-export const restart = () => async (dispatch: Dispatch, getState: GetState) => {
-    const discovery = selectDiscoveryForDevice(getState());
-    if (!discovery) return;
-    const progress = dispatch(
-        calculateProgress({
-            ...discovery,
-            failed: [],
-        }),
-    );
-    dispatch(
-        updateDiscovery({
-            ...progress,
-            failed: [],
-        }),
-    );
-    await dispatch(start());
-};
+export const restart = createThunk(
+    `${MODULE_PREFIX}/restart`,
+    async (_, { dispatch, getState }) => {
+        const discovery = selectDiscoveryForDevice(getState());
+        if (!discovery) return;
+        const progress = dispatch(
+            calculateProgress({
+                ...discovery,
+                failed: [],
+            }),
+        );
+        dispatch(
+            updateDiscovery({
+                ...progress,
+                failed: [],
+                deviceState: discovery.deviceState,
+            }),
+        );
+        await dispatch(start());
+    },
+);
 
 export const discoveryActions = {
     createDiscovery,
