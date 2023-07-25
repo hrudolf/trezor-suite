@@ -20,13 +20,13 @@ const SettingsWrapper = styled.div<{
     transition: 0.2s ease-in-out;
     position: relative;
     opacity: 0;
-    ${props =>
-        props.onClick &&
+    ${({ onClick, theme }) =>
+        onClick &&
         css`
             &:hover {
                 background-color: ${transparentize(
-                    props.theme.HOVER_TRANSPARENTIZE_FILTER,
-                    props.theme.HOVER_PRIMER_COLOR,
+                    theme.HOVER_TRANSPARENTIZE_FILTER,
+                    theme.HOVER_PRIMER_COLOR,
                 )};
             }
         `}
@@ -72,13 +72,13 @@ export const CoinWrapper = styled.button<{
     display: flex;
     justify-items: flex-start;
     align-items: center;
-    border: 1.5px solid ${props => props.theme.STROKE_GREY};
-    background: ${props => props.theme.BG_WHITE};
+    border: 1.5px solid ${({ theme }) => theme.STROKE_GREY};
+    background: ${({ theme }) => theme.BG_WHITE};
     border-radius: 9999px;
     margin: 0 13px 18px 0;
     height: 47px;
     font-weight: ${variables.FONT_WEIGHT.DEMI_BOLD};
-    color: ${props => props.theme.TYPE_DARK_GREY};
+    color: ${({ theme }) => theme.TYPE_DARK_GREY};
     cursor: pointer;
     transition: 0.2s ease-in-out;
     overflow: hidden;
@@ -86,7 +86,7 @@ export const CoinWrapper = styled.button<{
     &:disabled {
         cursor: not-allowed;
         opacity: 0.5;
-        background: ${props => props.theme.BG_GREY};
+        background: ${({ theme }) => theme.BG_GREY};
     }
 
     :hover {
@@ -95,13 +95,13 @@ export const CoinWrapper = styled.button<{
             toggled ? theme.BG_GREEN_HOVER : theme.TYPE_LIGHTER_GREY};
     }
 
-    ${props =>
-        !props.disabled &&
-        props.toggled &&
+    ${({ disabled, forceHover, hasSettings, theme, toggled }) =>
+        !disabled &&
+        toggled &&
         css`
-            border-color: ${props.theme.BG_GREEN};
-            ${props.forceHover && ShiftToSettings}
-            ${props.hasSettings &&
+            border-color: ${theme.BG_GREEN};
+            ${forceHover && ShiftToSettings}
+            ${hasSettings &&
             css`
                 @media (hover: hover) {
                     &:hover {
@@ -142,7 +142,7 @@ const Check = styled.div<{ visible: boolean }>`
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: ${props => props.theme.BG_GREEN};
+    background: ${({ theme }) => theme.BG_GREEN};
     width: 12px;
     height: 12px;
     position: absolute;
