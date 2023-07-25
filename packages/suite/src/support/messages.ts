@@ -5738,6 +5738,16 @@ export default defineMessages({
         defaultMessage: 'Not suitable for coinjoin - amount too high',
         description: 'Tooltip over an icon in Coin control section',
     },
+    TR_UTXO_REGISTERED_IN_COINJOIN: {
+        id: 'TR_UTXO_REGISTERED_IN_COINJOIN',
+        defaultMessage: 'UTXO currently registered in coinjoin',
+        description: 'Tooltip over an icon in Coin control section',
+    },
+    TR_UTXO_BANNED_IN_COINJOIN: {
+        id: 'TR_UTXO_BANNED_IN_COINJOIN',
+        defaultMessage: 'UTXO temporary banned from coinjoin until {sentenceEnd}',
+        description: 'Tooltip over an icon in Coin control section',
+    },
     TR_CHANGE_ADDRESS_TOOLTIP: {
         id: 'TR_CHANGE_ADDRESS_TOOLTIP',
         defaultMessage: 'This is a change address created from a previous send.',

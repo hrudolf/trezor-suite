@@ -5,13 +5,12 @@ import { fetchTransactionsThunk } from '@suite-common/wallet-core';
 import { amountToSatoshi, formatNetworkAmount } from '@suite-common/wallet-utils';
 import { FormattedCryptoAmount, Translation } from 'src/components/suite';
 import { SETTINGS } from 'src/config/suite';
-import { useActions, useSelector } from 'src/hooks/suite';
+import { useActions } from 'src/hooks/suite';
 import { Pagination } from 'src/components/wallet';
 import { useTheme, Checkbox, Icon, Switch, variables } from '@trezor/components';
 import { UtxoSelectionList } from 'src/components/wallet/CoinControl/UtxoSelectionList';
 import { useSendFormContext } from 'src/hooks/wallet';
 import { useBitcoinAmountUnit } from 'src/hooks/wallet/useBitcoinAmountUnit';
-import { selectCurrentTargetAnonymity } from 'src/reducers/wallet/coinjoinReducer';
 
 const Row = styled.div`
     align-items: center;
@@ -63,8 +62,6 @@ interface CoinControlProps {
 export const CoinControl = ({ close }: CoinControlProps) => {
     const [currentPage, setSelectedPage] = useState(1);
 
-    const targetAnonymity = useSelector(selectCurrentTargetAnonymity);
-
     const { fetchTransactions } = useActions({
         fetchTransactions: fetchTransactionsThunk,
     });
@@ -76,6 +73,7 @@ export const CoinControl = ({ close }: CoinControlProps) => {
         network,
         outputs,
         utxoSelection: {
+            coinjoinUtxoSelection: { targetAnonymity },
             allUtxosSelected,
             composedInputs,
             dustUtxos,

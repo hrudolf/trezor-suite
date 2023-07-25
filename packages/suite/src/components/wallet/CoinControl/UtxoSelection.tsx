@@ -1,5 +1,4 @@
 import React from 'react';
-import BigNumber from 'bignumber.js';
 import styled, { css } from 'styled-components';
 import { darken } from 'polished';
 
@@ -39,7 +38,7 @@ const StyledCheckbox = styled(Checkbox)<{ isChecked: boolean; $isGrey: boolean }
         `};
 `;
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ isDisabled: boolean }>`
     align-items: flex-start;
     border-radius: 8px;
     display: flex;
@@ -47,6 +46,12 @@ const Wrapper = styled.div`
     padding: 12px 12px 8px;
     transition: background 0.25s ease-out;
     cursor: pointer;
+    ${({ isDisabled }) =>
+        isDisabled &&
+        css`
+            color: ${({ theme }) => theme.TYPE_LIGHT_GREY};
+            cursor: default;
+        `};
 
     &:hover {
         background: ${({ theme }) => theme.BG_GREY};
@@ -132,10 +137,15 @@ export const UtxoSelection = ({ transaction, utxo }: UtxoSelectionProps) => {
     const {
         account,
         network,
-        utxoSelection: { selectedUtxos, composedInputs, toggleUtxoSelection, isCoinControlEnabled },
+        utxoSelection: {
+            selectedUtxos,
+            composedInputs,
+            coinjoinUtxoSelection,
+            toggleUtxoSelection,
+            isCoinControlEnabled,
+        },
     } = useSendFormContext();
 
-    const coordinatorData = useSelector(state => state.wallet.coinjoin.clients[account.symbol]);
     const device = useSelector(state => state.suite.device);
     // selecting metadata from store rather than send form context which does not update on metadata change
     const outputLabels = useSelector(
@@ -147,16 +157,7 @@ export const UtxoSelection = ({ transaction, utxo }: UtxoSelectionProps) => {
 
     const theme = useTheme();
 
-    const amountTooSmallForCoinjoin =
-        coordinatorData && new BigNumber(utxo.amount).lt(coordinatorData.allowedInputAmounts.min);
-    const amountTooBigForCoinjoin =
-        coordinatorData && new BigNumber(utxo.amount).gt(coordinatorData.allowedInputAmounts.max);
-    const isUnavailableForCoinjoin =
-        account.accountType === 'coinjoin' &&
-        (amountTooSmallForCoinjoin || amountTooBigForCoinjoin);
-    const unavailableMessage = amountTooSmallForCoinjoin
-        ? 'TR_AMOUNT_TOO_SMALL_FOR_COINJOIN'
-        : 'TR_AMOUNT_TOO_BIG_FOR_COINJOIN';
+    const unavailableMessage = coinjoinUtxoSelection.coinjoinUtxoUnavailableMessage(utxo);
     const isPendingTransaction = utxo.confirmations === 0;
     const isChangeAddress = utxo.path.split('/').at(-2) === '1'; // change address always has a 1 on the penultimate level of the derivation path
     const outputLabel = outputLabels?.[utxo.txid]?.[utxo.vout];
@@ -166,6 +167,7 @@ export const UtxoSelection = ({ transaction, utxo }: UtxoSelectionProps) => {
     const isChecked = isCoinControlEnabled
         ? selectedUtxos.some(selected => isSameUtxo(selected, utxo))
         : composedInputs.some(u => u.prev_hash === utxo.txid && u.prev_index === utxo.vout);
+    const isDisabled = coinjoinUtxoSelection.coinjoinBlockedUtxos.includes(utxo);
 
     const handleCheckbox = () => toggleUtxoSelection(utxo);
     const showTransactionDetail: React.MouseEventHandler = e => {
@@ -176,22 +178,35 @@ export const UtxoSelection = ({ transaction, utxo }: UtxoSelectionProps) => {
     };
 
     return (
-        <Wrapper onClick={handleCheckbox}>
+        <Wrapper isDisabled={isDisabled} onClick={isDisabled ? handleCheckbox : undefined}>
             <StyledCheckbox
                 $isGrey={!selectedUtxos.length}
                 isChecked={isChecked}
+                isDisabled={isDisabled}
                 onClick={handleCheckbox}
             />
             <Body>
                 <Row>
-                    {isPendingTransaction && (
-                        <UtxoTag tooltipMessage="TR_IN_PENDING_TRANSACTION" icon="CLOCK" />
+                    {isDisabled && (
+                        <UtxoTag
+                            tooltipMessage={<Translation id="TR_UTXO_REGISTERED_IN_COINJOIN" />}
+                            icon="WARNING"
+                        />
                     )}
-                    {isUnavailableForCoinjoin && (
+                    {isPendingTransaction && (
+                        <UtxoTag
+                            tooltipMessage={<Translation id="TR_IN_PENDING_TRANSACTION" />}
+                            icon="CLOCK"
+                        />
+                    )}
+                    {unavailableMessage && (
                         <UtxoTag tooltipMessage={unavailableMessage} icon="BLOCKED" />
                     )}
                     {isChangeAddress && (
-                        <UtxoTag tooltipMessage="TR_CHANGE_ADDRESS_TOOLTIP" icon="CHANGE_ADDRESS" />
+                        <UtxoTag
+                            tooltipMessage={<Translation id="TR_CHANGE_ADDRESS_TOOLTIP" />}
+                            icon="CHANGE_ADDRESS"
+                        />
                     )}
                     <Address>{utxo.address}</Address>
                     <StyledCryptoAmount

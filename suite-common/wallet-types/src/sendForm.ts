@@ -71,8 +71,18 @@ export interface ComposeActionContext {
     prison?: Record<string, unknown>;
 }
 
+export interface CoinjoinUtxoSelectionContext {
+    targetAnonymity?: number;
+    coinjoinBlockedUtxos: AccountUtxo[];
+    coinjoinBannedUtxos: AccountUtxo[];
+    coinjoinAmountTooLowUtxos: AccountUtxo[];
+    coinjoinAmountTooHighUtxos: AccountUtxo[];
+    coinjoinUtxoUnavailableMessage: (utxo: AccountUtxo) => string | undefined;
+}
+
 export interface UtxoSelectionContext {
     excludedUtxos: ExcludedUtxos;
+    coinjoinUtxoSelection: CoinjoinUtxoSelectionContext;
     allUtxosSelected: boolean;
     composedInputs: PROTO.TxInputType[];
     dustUtxos: AccountUtxo[];
