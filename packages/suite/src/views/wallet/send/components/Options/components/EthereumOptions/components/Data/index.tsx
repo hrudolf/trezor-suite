@@ -20,11 +20,11 @@ const Space = styled.div`
     min-width: 65px;
 `;
 
-interface Props {
+interface DataProps {
     close: () => void;
 }
 
-const Data = ({ close }: Props) => {
+const Data = ({ close }: DataProps) => {
     const {
         register,
         outputs,

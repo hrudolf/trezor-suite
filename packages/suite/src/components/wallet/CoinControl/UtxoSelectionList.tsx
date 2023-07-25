@@ -40,7 +40,7 @@ const StyledIcon = styled(Icon)<{ backgroundColor?: string }>`
     padding: 20px;
 `;
 
-interface Props {
+interface UtxoSelectionListProps {
     description: React.ReactNode;
     heading: React.ReactNode;
     icon: IconType;
@@ -56,7 +56,7 @@ export const UtxoSelectionList = ({
     iconColor,
     utxos,
     withHeader,
-}: Props) => {
+}: UtxoSelectionListProps) => {
     const {
         account,
         utxoSelection: { composedInputs, isCoinControlEnabled, selectedUtxos },

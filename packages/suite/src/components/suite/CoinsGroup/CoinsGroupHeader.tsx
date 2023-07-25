@@ -38,7 +38,7 @@ const SettingsWrapper = styled.div<{ disabled: boolean }>`
     }
 `;
 
-interface Props {
+interface CoinsGroupHeaderProps {
     active: number;
     total: number;
     label: React.ReactNode;
@@ -46,7 +46,13 @@ interface Props {
     toggleSettingsMode?: () => void;
 }
 
-const CoinsGroupHeader = ({ active, total, label, settingsMode, toggleSettingsMode }: Props) => (
+const CoinsGroupHeader = ({
+    active,
+    total,
+    label,
+    settingsMode,
+    toggleSettingsMode,
+}: CoinsGroupHeaderProps) => (
     <Wrapper>
         {settingsMode ? (
             <Translation id="TR_SELECT_COIN_FOR_SETTINGS" />
