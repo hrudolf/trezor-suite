@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -73,8 +73,11 @@ export const useGraphForSingleAccount = ({
         selectAccountGraphTimeframe(state, accountKey),
     );
 
-    const handleSelectAccountTimeframe = (timeframeHours: TimeframeHoursValue) =>
-        dispatch(setAccountGraphTimeframe({ accountKey, timeframeHours }));
+    const handleSelectAccountTimeframe = useCallback(
+        (timeframeHours: TimeframeHoursValue) =>
+            dispatch(setAccountGraphTimeframe({ accountKey, timeframeHours })),
+        [dispatch, accountKey],
+    );
 
     const { startOfTimeFrameDate, endOfTimeFrameDate } =
         useGetTimeFrameForHistoryHours(accountGraphTimeframe);
@@ -121,8 +124,11 @@ export const useGraphForAllAccounts = ({ fiatCurrency }: CommonUseGraphParams) =
         [accounts],
     );
 
-    const handleSelectPortfolioTimeframe = (timeframeHours: TimeframeHoursValue) =>
-        dispatch(setPortfolioGraphTimeframe({ timeframeHours }));
+    const handleSelectPortfolioTimeframe = useCallback(
+        (timeframeHours: TimeframeHoursValue) =>
+            dispatch(setPortfolioGraphTimeframe({ timeframeHours })),
+        [dispatch],
+    );
 
     useWatchTimeframeChangeForAnalytics(portfolioGraphTimeframe);
 
