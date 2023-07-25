@@ -385,8 +385,6 @@ export abstract class AbstractTransport extends TypedEmitter<{
 
         this.descriptors = nextDescriptors;
 
-        console.log('this.listenPromise',this.listenPromise);
-        console.log('nextDescriptors',nextDescriptors);
             Object.keys(this.listenPromise).forEach(path => {
                 const descriptor = nextDescriptors.find(device => device.path === path);
 

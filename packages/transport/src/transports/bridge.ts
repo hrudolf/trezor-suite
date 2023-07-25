@@ -145,12 +145,14 @@ export class BridgeTransport extends AbstractTransport {
             async signal => {
                 const previous = input.previous == null ? 'null' : input.previous;
 
-                console.log('acqurie request', `${input.path}/${previous}`)
                 if (this.listening) {
                     // listenPromise is resolved on next listen
                     this.listenPromise[input.path] = createDeferred();
                 }
 
+                // it is not quaranteed that /listen response will arrive after /acquire response (although in majority of cases it does)
+                // so, in order to be able to keep the logic "acquire -> wait for listen response -> return from acquire" we need to wait 
+                // for /acquire response before resolving listenPromise
                 this.acquirePromise = createDeferred()
 
                 const response = await this._post('/acquire', {
@@ -160,8 +162,6 @@ export class BridgeTransport extends AbstractTransport {
                 });
 
                 this.acquirePromise.resolve(undefined);
-
-                console.log('acquire response', response);
 
                 if (!response.success) {
                     return response;
@@ -185,7 +185,6 @@ export class BridgeTransport extends AbstractTransport {
     // https://github.dev/trezor/trezord-go/blob/f559ee5079679aeb5f897c65318d3310f78223ca/core/core.go#L354
     // @ts-ignore
     public release({ path, session}: string) {
-        console.log('release request path session', path, session)
         return this.scheduleAction(async signal => {
             if (this.listening) {
                 this.releasingSession = session;
