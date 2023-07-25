@@ -13,9 +13,7 @@ import { TrezorDevice } from 'src/types/suite';
 import { getFirmwareType, getFirmwareVersion, getDeviceModel } from '@trezor/device-utils';
 
 const FirmwareStep = () => {
-    const { device } = useSelector(state => ({
-        device: state.suite.device,
-    }));
+    const device = useSelector(state => state.suite.device);
     const { goToNextStep, updateAnalytics } = useOnboarding();
     const {
         status,

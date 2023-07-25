@@ -4,11 +4,9 @@ import { isWebUsb } from 'src/utils/suite/transport';
 import { MODAL } from 'src/actions/suite/constants';
 
 export const useFirmware = () => {
-    const { firmware, transport, modal } = useSelector(state => ({
-        firmware: state.firmware,
-        modal: state.modal,
-        transport: state.suite.transport,
-    }));
+    const firmware = useSelector(state => state.firmware);
+    const transport = useSelector(state => state.suite.transport);
+    const modal = useSelector(state => state.modal);
 
     const showFingerprintCheck =
         modal.context === MODAL.CONTEXT_DEVICE &&
