@@ -205,8 +205,7 @@ export abstract class AbstractTransport extends TypedEmitter<{
      * Release session
      */
     abstract release(
-        session: string,
-        onclose: boolean,
+        { path, session}: { path: string, session: string}
     ): AbortableCall<
         void,
         | typeof ERRORS.SESSION_NOT_FOUND
@@ -380,39 +379,56 @@ export abstract class AbstractTransport extends TypedEmitter<{
         const diff = this._getDiff(nextDescriptors);
         this.logger.debug('nextDescriptors', nextDescriptors, 'diff', diff);
 
+        if (!diff.didUpdate) {
+            return;
+        }
+
         this.descriptors = nextDescriptors;
 
-        if (diff.didUpdate) {
+        console.log('this.listenPromise',this.listenPromise);
+        console.log('nextDescriptors',nextDescriptors);
             Object.keys(this.listenPromise).forEach(path => {
                 const descriptor = nextDescriptors.find(device => device.path === path);
 
                 if (!descriptor) {
+                    console.log('listen promise error 1 - no next descriptor for this path');
+
                     return this.listenPromise[path].resolve(
                         this.error({ error: ERRORS.DEVICE_DISCONNECTED_DURING_ACTION }),
                     );
                 }
 
-                if (this.acquiredUnconfirmed[descriptor.path]) {
+                if (this.acquiredUnconfirmed[path]) {
                     const reportedNextSession = descriptor.session;
-                    if (reportedNextSession === this.acquiredUnconfirmed[descriptor.path]) {
-                        this.listenPromise[descriptor.path].resolve(
-                            this.success(this.acquiredUnconfirmed[descriptor.path]!),
+                    if (reportedNextSession === this.acquiredUnconfirmed[path]) {
+                        this.listenPromise[path].resolve(
+                            this.success(this.acquiredUnconfirmed[path]),
                         );
                     } else {
-                        this.listenPromise[descriptor.path].resolve(
+                        // another app took over
+                        console.log('listen promise error 2 - reporrted next session differs from expected');
+
+                        this.listenPromise[path].resolve(
                             this.error({ error: ERRORS.SESSION_WRONG_PREVIOUS }),
                         );
                     }
-                    delete this.acquiredUnconfirmed[descriptor.path];
+                    delete this.acquiredUnconfirmed[path];
+                } else if (this.releasingSession) {
+                    this.listenPromise[path].resolve(this.success('meow'));
+                } else {
+                    console.log('listen promise error 3 - no acquire or reelase in progress');
+
+                    // listen reported changes but we were not expecting any (no acquire or release in progress)
+                    // this means that another application acquired session
+                    this.listenPromise[path].resolve(
+                        this.error({ error: ERRORS.SESSION_WRONG_PREVIOUS }),
+                    );
                 }
             });
 
-            if (this.releasePromise) {
-                this.releasePromise.resolve(undefined);
-            }
             this.emit(TRANSPORT.UPDATE, diff);
             this.releasingSession = undefined;
-        }
+        
     }
 
     protected success<T>(payload: T): Success<T> {

@@ -180,12 +180,12 @@ export class DeviceList extends TypedEmitter<DeviceListEvents> {
                     }
                 });
 
-                diff.acquired.forEach(descriptor => {
-                    const path = descriptor.path.toString();
-                    if (this.creatingDevicesDescriptors[path]) {
-                        this.creatingDevicesDescriptors[path] = descriptor;
-                    }
-                });
+                // diff.acquired.forEach(descriptor => {
+                //     const path = descriptor.path.toString();
+                //     if (this.creatingDevicesDescriptors[path]) {
+                //         this.creatingDevicesDescriptors[path] = descriptor;
+                //     }
+                // });
 
                 diff.acquiredElsewhere.forEach((descriptor: Descriptor) => {
                     const path = descriptor.path.toString();

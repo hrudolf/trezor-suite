@@ -202,7 +202,7 @@ export class Device extends TypedEmitter<DeviceEvents> {
             if (this.releasePromise) {
                 await this.releasePromise;
             }
-            this.releasePromise = this.transport.release(this.activitySessionID, false);
+            this.releasePromise = this.transport.release({session:this.activitySessionID, path:  this.originalDescriptor.path}, false);
 
             const releaseResponse = await this.releasePromise.promise;
             this.releasePromise = undefined;

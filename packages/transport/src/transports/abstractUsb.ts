@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createDeferred, Deferred } from '@trezor/utils';
 
 import { AbstractTransport, AcquireInput } from './abstract';

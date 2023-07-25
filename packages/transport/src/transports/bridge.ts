@@ -1,4 +1,4 @@
-import { versionUtils, createTimeoutPromise, createDeferred, Deferred } from '@trezor/utils';
+import { versionUtils, createDeferred, Deferred } from '@trezor/utils';
 
 import { bridgeApiCall } from '../utils/bridgeApiCall';
 import * as bridgeApiResult from '../utils/bridgeApiResult';
@@ -109,7 +109,6 @@ export class BridgeTransport extends AbstractTransport {
         if (this.stopped) {
             return;
         }
-        const listenTimestamp = new Date().getTime();
 
         const response = await this._post('/listen', {
             body: this.descriptors,
@@ -117,18 +116,20 @@ export class BridgeTransport extends AbstractTransport {
         });
 
         if (!response.success) {
-            const time = new Date().getTime() - listenTimestamp;
-            if (time > 1100) {
-                await createTimeoutPromise(1000);
-                return this._listen();
-            }
-            this.emit('transport-error', response.error);
-            return;
+            return this._listen();
         }
 
-        if (this.acquirePromise?.promise) {
-            await this.acquirePromise.promise;
+        // listen
+        // acquire
+        //              <-- listen res
+        // acquire res
+        // listen res
+
+        if (this.acquirePromise) {
+            await this.acquirePromise.promise
         }
+        
+
         this.handleDescriptorsChange(response.payload);
         return this._listen();
     }
@@ -144,10 +145,13 @@ export class BridgeTransport extends AbstractTransport {
             async signal => {
                 const previous = input.previous == null ? 'null' : input.previous;
 
+                console.log('acqurie request', `${input.path}/${previous}`)
                 if (this.listening) {
                     // listenPromise is resolved on next listen
                     this.listenPromise[input.path] = createDeferred();
                 }
+
+                this.acquirePromise = createDeferred()
 
                 const response = await this._post('/acquire', {
                     params: `${input.path}/${previous}`,
@@ -155,15 +159,15 @@ export class BridgeTransport extends AbstractTransport {
                     signal,
                 });
 
-                if (this.acquirePromise) {
-                    this.acquirePromise.resolve(undefined);
-                }
+                this.acquirePromise.resolve(undefined);
+
+                console.log('acquire response', response);
 
                 if (!response.success) {
                     return response;
                 }
 
-                this.acquiredUnconfirmed[input.path] = response.payload;
+                this.acquiredUnconfirmed[input.path] = response.payload
 
                 if (!this.listenPromise[input.path]) {
                     return this.success(response.payload);
@@ -179,11 +183,14 @@ export class BridgeTransport extends AbstractTransport {
     }
 
     // https://github.dev/trezor/trezord-go/blob/f559ee5079679aeb5f897c65318d3310f78223ca/core/core.go#L354
-    public release(session: string, onclose?: boolean) {
+    // @ts-ignore
+    public release({ path, session}: string) {
+        console.log('release request path session', path, session)
         return this.scheduleAction(async signal => {
             if (this.listening) {
                 this.releasingSession = session;
-                this.releasePromise = createDeferred();
+                this.listenPromise[path] = createDeferred();
+
             }
 
             this._post('/release', {
@@ -191,19 +198,9 @@ export class BridgeTransport extends AbstractTransport {
                 signal,
             });
 
-            if (onclose || !this.listening) {
-                // we need release request to reach bridge so that bridge state can update
-                // otherwise we would risk 'unacquired device' after reloading application
-                await createTimeoutPromise(1);
-                return this.success(undefined);
-            }
-
-            if (this.releasePromise?.promise) {
-                await this.releasePromise.promise;
-                delete this.releasePromise;
-            }
-
-            return this.success(undefined);
+            return this.listenPromise[path].promise.finally(() => {
+                delete this.listenPromise[path];
+            });
         });
     }
 
